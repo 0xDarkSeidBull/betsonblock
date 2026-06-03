@@ -1,22 +1,29 @@
 import React from "react";
-import { Wallet, Shield, History, ArrowLeft } from "lucide-react";
+import { Shield, History, ArrowLeft } from "lucide-react";
 import { api, type RoundView } from "./lib/api";
+import { useAccount, useBalance } from "wagmi";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 
-import * as W from "./lib/wallet";
 import RoundCard from "./components/RoundCard";
 import ProvablyFair from "./components/ProvablyFair";
 import Home from "./components/Home";
-import YourBets from "./components/YourBets";
+import YourBets, { type LiveBet } from "./components/YourBets";
+import WalletButton from "./components/WalletButton";
 
 export default function App() {
   const [view, setView] = React.useState<"home" | "zone">("home");
   const [rounds, setRounds] = React.useState<RoundView[]>([]);
   const [history, setHistory] = React.useState<RoundView[]>([]);
   const [head, setHead] = React.useState<number | null>(null);
-  const [addr, setAddr] = React.useState<string | null>(null);
-  const [bal, setBal] = React.useState<number>(0);
   const [pfBlock, setPfBlock] = React.useState<number | null>(null);
-  const [connecting, setConnecting] = React.useState(false);
+  const [liveBets, setLiveBets] = React.useState<LiveBet[]>([]);
+
+  const { address, isConnected } = useAccount();
+  const { data: balance, refetch: refetchBal } = useBalance({ address });
+  const { openConnectModal } = useConnectModal();
+
+  const addr = isConnected && address ? address.toLowerCase() : null;
+  const bal = balance ? Number(balance.formatted) : 0;
 
   // poll rounds + history when in the zone
   React.useEffect(() => {
@@ -34,6 +41,13 @@ export default function App() {
     return () => { alive = false; clearInterval(id); };
   }, [view]);
 
+  // prune live bets whose round is no longer active (settled → shows up in ended)
+  React.useEffect(() => {
+    if (rounds.length === 0) return;
+    const active = new Set(rounds.map((r) => r.id));
+    setLiveBets((prev) => prev.filter((b) => active.has(b.roundId)));
+  }, [rounds]);
+
   // live head ticker
   React.useEffect(() => {
     let alive = true;
@@ -43,26 +57,12 @@ export default function App() {
     return () => { alive = false; clearInterval(id); };
   }, []);
 
-  // refresh balance periodically when connected
-  React.useEffect(() => {
-    if (!addr) return;
-    let alive = true;
-    const t = async () => { const b = await W.getBalance(addr); if (alive) setBal(b); };
-    t();
-    const id = setInterval(t, 8000);
-    W.onAccountsChanged((a) => { setAddr(a); if (!a) setBal(0); });
-    return () => { alive = false; clearInterval(id); };
-  }, [addr]);
+  // clear live bets on disconnect
+  React.useEffect(() => { if (!addr) setLiveBets([]); }, [addr]);
 
-  const connect = async () => {
-    setConnecting(true);
-    try {
-      const a = await W.connect();
-      setAddr(a);
-      setBal(await W.getBalance(a));
-    } catch (e: any) {
-      alert(e?.message || "Could not connect wallet");
-    } finally { setConnecting(false); }
+  const handleBet = (roundId: number, i: { mode: string; pick: string }) => {
+    setLiveBets((p) => [...p, { roundId, mode: i.mode, pick: i.pick, stake: 0.01, placedAt: Date.now() }]);
+    refetchBal();
   };
 
   const totalLiveStaked = rounds.reduce((s, r) => s + r.totalStaked, 0);
@@ -102,16 +102,7 @@ export default function App() {
           </div>
           <div className="top-right">
             <div className="live-head"><span className="pulse" /> Block <b className="mono" style={{ color: "#fff", marginLeft: 4 }}>#{head?.toLocaleString() ?? "…"}</b></div>
-            {addr ? (
-              <>
-                <div className="bal"><span className="coin">◆</span> {bal.toLocaleString(undefined, { maximumFractionDigits: 4 })} zkLTC</div>
-                <span className="btn btn-ghost btn-sm" style={{ cursor: "default" }}>{addr.slice(0, 6)}…{addr.slice(-4)}</span>
-              </>
-            ) : (
-              <button className="btn btn-primary btn-sm" onClick={connect} disabled={connecting}>
-                <Wallet size={14} /> {connecting ? "Connecting…" : "Connect Wallet"}
-              </button>
-            )}
+            <WalletButton />
           </div>
         </div>
 
@@ -137,9 +128,9 @@ export default function App() {
                   round={r}
                   slot={i === 0 ? "closing" : "open"}
                   addr={addr}
-                  onNeedConnect={connect}
+                  onNeedConnect={() => openConnectModal?.()}
                   onOpenPF={(b) => setPfBlock(b)}
-                  onBet={() => { if (addr) W.getBalance(addr).then(setBal); }}
+                  onBet={(info) => handleBet(r.id, info)}
                 />
               ))}
             </div>
@@ -157,8 +148,13 @@ export default function App() {
                   </div>
                 );
               })}
-              <YourBets addr={addr} />
-
+              {addr && (
+                <YourBets
+                  address={addr}
+                  liveBets={liveBets}
+                  rounds={rounds.map((r) => ({ id: r.id, lockAt: r.lockAt, settleAt: r.settleAt }))}
+                />
+              )}
             </aside>
           </div>
         </div>
