@@ -183,7 +183,13 @@ export default function RoundCard({
           {/* mode selector */}
           <div className="pm-modes">
             {MODES.map((m) => (
-              <button key={m.id} className={`pm-mode ${mode.id === m.id ? "on" : ""}`} onClick={() => setMode(m)}>{m.label}</button>
+              <button key={m.id} className={`pm-mode ${mode.id === m.id ? "on" : ""}`} onClick={() => {
+                setMode(m);
+                // reset pick when switching mode so digits don't inherit "even" etc.
+                if (m.kind === "binary" && m.picks) setPick(m.picks[0]);
+                else setPick("");
+                setNum("");
+              }}>{m.label}</button>
             ))}
           </div>
 
