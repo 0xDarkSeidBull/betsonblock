@@ -7,7 +7,7 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import RoundCard from "./components/RoundCard";
 import ProvablyFair from "./components/ProvablyFair";
 import Home from "./components/Home";
-import YourBets, { type LiveBet } from "./components/YourBets";
+import { type LiveBet } from "./components/YourBets";
 import YourBetsModal from "./components/YourBetsModal";
 import WalletButton from "./components/WalletButton";
 
