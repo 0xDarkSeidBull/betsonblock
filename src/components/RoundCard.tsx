@@ -150,6 +150,24 @@ export default function RoundCard({
 
           <div className="pm-prog-thin"><div className="fill" style={{ width: `${pct}%` }} /></div>
 
+          {/* EST. TARGET BLOCK */}
+          {head != null && (
+            <div style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              margin: "10px 0 4px", padding: "8px 12px", borderRadius: 10,
+              background: isLocked ? "rgba(249,115,22,.14)" : "rgba(255,255,255,.04)",
+              border: `1px solid ${isLocked ? "rgba(249,115,22,.5)" : "var(--line)"}`,
+            }}>
+              <span style={{ fontSize: 10, letterSpacing: ".16em", textTransform: "uppercase",
+                color: "var(--muted)", fontWeight: 700 }}>Est. Target Block</span>
+              <span className="mono" style={{
+                fontSize: 14, fontWeight: 700,
+                color: isLocked ? "#fb923c" : "#fff",
+                textShadow: isLocked ? "0 0 12px rgba(249,115,22,.6)" : "none",
+              }}>#{(head + Math.round(msToSettle / 200)).toLocaleString()} <span style={{ opacity: .6 }}>~</span></span>
+            </div>
+          )}
+
           {/* banks */}
           <div className="pm-banks">
             <div><p>Total Pot</p><b className="gold">◆ {totalPot.toFixed(2)}</b></div>
