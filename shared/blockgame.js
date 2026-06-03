@@ -54,6 +54,8 @@ export function deriveSignals(block) {
  */
 export const TX_LINE = 5;        // Txn Over/Under threshold
 export const GAS_LINE = 500000;  // Gas Over/Under threshold
+export const PERFECT_BLOCK_WINDOW_MS = 2 * 60 * 1000; // first 2 minutes of a round
+export const PERFECT_BLOCK_MULTIPLIER = 50;           // 50x reward for exact guess
 
 export const MODES = {
   coinflip: {
