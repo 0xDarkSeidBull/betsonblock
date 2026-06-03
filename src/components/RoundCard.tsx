@@ -327,7 +327,7 @@ export default function RoundCard({
 
           {/* mode selector */}
           <div className="pm-modes">
-            {MODES.map((m) => (
+            {MODES.filter((m) => m.id !== "perfectblock").map((m) => (
               <button key={m.id} className={`pm-mode ${mode.id === m.id ? "on" : ""}`} onClick={() => {
                 setMode(m);
                 // reset pick when switching mode so digits don't inherit "even" etc.
