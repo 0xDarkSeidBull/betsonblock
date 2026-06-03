@@ -224,15 +224,32 @@ export default function RoundCard({
 
           {/* mode selector */}
           <div className="pm-modes">
-            {MODES.map((m) => (
-              <button key={m.id} className={`pm-mode ${mode.id === m.id ? "on" : ""}`} onClick={() => {
-                setMode(m);
-                // reset pick when switching mode so digits don't inherit "even" etc.
-                if (m.kind === "binary" && m.picks) setPick(m.picks[0]);
-                else setPick("");
-                setNum("");
-              }}>{m.label}</button>
-            ))}
+            {MODES.map((m) => {
+              const done = alreadyBetModes.has(m.id);
+              return (
+                <button
+                  key={m.id}
+                  className={`pm-mode ${mode.id === m.id ? "on" : ""} ${done ? "done" : ""}`}
+                  disabled={done}
+                  onClick={() => {
+                    if (done) return;
+                    setMode(m);
+                    if (m.kind === "binary" && m.picks) setPick(m.picks[0]);
+                    else setPick("");
+                    setNum("");
+                    if (m.kind === "perfectblock" && head != null) {
+                      const est = head + Math.round(Math.max(0, round.settleAt - Date.now()) / 200);
+                      const s = String(est);
+                      setPbPrefix(s.length > 3 ? s.slice(0, -3) : "");
+                    } else {
+                      setPbPrefix("");
+                    }
+                  }}>
+                  {done && <span style={{ marginRight: 4, color: "#22c55e" }}>✓</span>}
+                  {m.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* binary → voted bar + two big buttons (prediction market look) */}
