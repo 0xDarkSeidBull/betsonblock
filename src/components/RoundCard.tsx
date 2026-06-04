@@ -123,6 +123,16 @@ export default function RoundCard({
       if (res.ok) {
         setMyBets((p) => [...p, { mode: mode.id, pick: String(finalPick) }]);
         onBet({ mode: mode.id, pick: String(finalPick), txHash });
+        const last4 = addr!.slice(-4);
+        const ts4 = String(Date.now()).slice(-4);
+        setToast({
+          kind: "success",
+          mode: mode.label,
+          pick: String(finalPick).toUpperCase(),
+          stake: BET,
+          roundId: round.id,
+          refId: `BOB-${round.id}-${last4}-${ts4}`,
+        });
         // close after a brief moment so the user sees the lever animation finish
         setTimeout(() => {
           setShowBet(false); setNum("");
@@ -130,9 +140,11 @@ export default function RoundCard({
         }, 700);
       } else {
         setConfirmPulled(false);
+        setToast({ kind: "error", message: res.error || "Bet was rejected." });
       }
-    } catch {
+    } catch (e: any) {
       setConfirmPulled(false);
+      setToast({ kind: "error", message: e?.message || "Transaction failed." });
     } finally { setPlacing(false); }
   };
 
