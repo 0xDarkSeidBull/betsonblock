@@ -134,10 +134,10 @@ export default function App() {
             </div>
             <div className="top-right">
               <div className="live-head"><span className="pulse" /> Block <b className="mono" style={{ marginLeft: 4 }}>#{head?.toLocaleString() ?? "…"}</b></div>
-              <button className="btn btn-primary btn-sm" onClick={() => setView("zone")}>Enter Zone</button>
+              <button className="btn btn-primary btn-sm" onClick={() => goView("zone")}>Enter Zone</button>
             </div>
           </div>
-          <Home onEnter={() => setView("zone")} />
+          <Home onEnter={() => goView("zone")} />
         </div>
         {pfBlock != null && <ProvablyFair block={pfBlock} onClose={() => setPfBlock(null)} />}
       </>
@@ -150,7 +150,7 @@ export default function App() {
     <>
       <div className="app zone-mode">
         <div className="topbar">
-          <div className="logo" style={{ cursor: "pointer" }} onClick={() => setView("home")}>
+          <div className="logo" style={{ cursor: "pointer" }} onClick={() => goView("home")}>
             <img src="https://raw.githubusercontent.com/dopedopex/your-friendly-helper/main/logo.png" alt="BetsOnBlock" width={36} height={36} style={{ borderRadius: 10, objectFit: "cover" }} />
             <div><h1>Bets<b>On</b>Block</h1></div>
           </div>
@@ -170,7 +170,7 @@ export default function App() {
         </div>
 
         <div className="wrap">
-          <button className="back-link" onClick={() => setView("home")}><ArrowLeft size={14} /> Back to home</button>
+          <button className="back-link" onClick={() => goView("home")}><ArrowLeft size={14} /> Back to home</button>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div>
               <h1 className="page-title">Live Rounds</h1>
