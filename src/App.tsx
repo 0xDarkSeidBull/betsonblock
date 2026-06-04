@@ -12,6 +12,7 @@ import { type LiveBet } from "./components/YourBets";
 import YourBetsModal from "./components/YourBetsModal";
 import WalletButton from "./components/WalletButton";
 import CoinImg from "./components/Coin";
+import WinnersMarquee from "./components/WinnersMarquee";
 
 export default function App() {
   const [view, setView] = React.useState<"home" | "zone">(
