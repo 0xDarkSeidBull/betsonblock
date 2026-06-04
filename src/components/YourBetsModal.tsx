@@ -15,6 +15,7 @@ type EndedBet = {
   win: boolean;
   payout: number;
   settledAt: number;
+  payoutTx?: string | null;
 };
 
 type LiveGroup = {
