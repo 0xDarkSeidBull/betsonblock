@@ -14,7 +14,25 @@ import WalletButton from "./components/WalletButton";
 import CoinImg from "./components/Coin";
 
 export default function App() {
-  const [view, setView] = React.useState<"home" | "zone">("home");
+  const [view, setView] = React.useState<"home" | "zone">(
+    typeof window !== "undefined" && window.location.pathname.startsWith("/bettingzone") ? "zone" : "home"
+  );
+
+  const goView = React.useCallback((next: "home" | "zone") => {
+    setView(next);
+    const path = next === "zone" ? "/bettingzone" : "/";
+    if (typeof window !== "undefined" && window.location.pathname !== path) {
+      window.history.pushState({}, "", path);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    const onPop = () => {
+      setView(window.location.pathname.startsWith("/bettingzone") ? "zone" : "home");
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
   const [rounds, setRounds] = React.useState<RoundView[]>([]);
   const [history, setHistory] = React.useState<RoundView[]>([]);
   const [historyPage, setHistoryPage] = React.useState(1);
