@@ -220,7 +220,10 @@ export default function App() {
                     <span className="mono" style={{ color: "#22d3ee", fontWeight: 700, fontSize: 13 }}>
                       #{b.number.toLocaleString()}
                     </span>
-                    <button className="verify-btn" onClick={() => setPfBlock(b.number)}>Verify</button>
+                    <span className="verify-tip-wrap">
+                      <button className="verify-btn" onClick={() => setPfBlock(b.number)}>Verify</button>
+                      <span className="verify-tip">This block's hash was used to determine all game results. Click to verify on the LiteForge block explorer.</span>
+                    </span>
                   </div>
                 );
               })}
