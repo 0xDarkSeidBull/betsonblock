@@ -113,8 +113,18 @@ export default function App() {
     return () => { alive = false; clearInterval(id); };
   }, []);
 
-  // clear live (pending) bets on disconnect — ended history is refetched from API.
-  React.useEffect(() => { if (!addr) setLiveBets([]); }, [addr]);
+  // wallet change → full reset (clear live bets, force remount of round cards to reset mode/picks)
+  const [resetKey, setResetKey] = React.useState(0);
+  const prevAddrRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    if (prevAddrRef.current !== addr) {
+      prevAddrRef.current = addr;
+      setLiveBets([]);
+      setShowYourBets(false);
+      setResetKey((k) => k + 1);
+      refetchBal();
+    }
+  }, [addr, refetchBal]);
 
   const handleBet = (roundId: number, i: { mode: string; pick: string }) => {
     setLiveBets((p) => [...p, { roundId, mode: i.mode, pick: i.pick, stake: 0.01, placedAt: Date.now() }]);
