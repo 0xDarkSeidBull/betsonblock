@@ -15,6 +15,7 @@ import CoinImg from "./components/Coin";
 import WinnersMarquee from "./components/WinnersMarquee";
 import PointsToast from "./components/PointsToast";
 import YourPointsModal from "./components/YourPointsModal";
+import HeaderStats from "./components/HeaderStats";
 
 export default function App() {
   const [view, setView] = React.useState<"home" | "zone">(
