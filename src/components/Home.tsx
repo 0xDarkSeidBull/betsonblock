@@ -23,7 +23,7 @@ export default function Home({ onEnter }: { onEnter: () => void }) {
         <div className="hero-stats">
           <div><b>0.01</b><span>zkLTC per bet</span></div>
           <div><b>~0.2s</b><span>block time</span></div>
-          <div><b>7</b><span>game modes</span></div>
+          <div><b>8</b><span>game modes</span></div>
           <div><b>100%</b><span>verifiable</span></div>
         </div>
       </section>
