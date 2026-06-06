@@ -131,7 +131,7 @@ function Breakdown({ data }: { data: { block: any; signals: any } }) {
           ["You guess the exact block number before the round opens", ""],
           ["When the round settles, the chain's current block number is taken", `#${block.number.toLocaleString()}`],
           ["If your guess === that block number, you win 50× your stake", `Stake 0.01 → Win 0.50 zkLTC`],
-          ["No randomness from the hash — only the block height decides", "block.number"],
+          ["No randomness from the hash only the block height decides", "block.number"],
         ]}
       />
     </>
