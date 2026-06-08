@@ -718,6 +718,20 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       )}
+
+      {toast && (
+        <div style={{
+          position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
+          background: "#0a0a0a", color: "#fde047",
+          border: "3px solid #000", borderRadius: 12,
+          boxShadow: "5px 5px 0 0 #000",
+          padding: "12px 18px",
+          fontFamily: "'Space Grotesk',system-ui,sans-serif",
+          fontWeight: 900, fontSize: 14, letterSpacing: ".04em",
+          zIndex: 1000,
+          animation: "fade-in .3s ease-out",
+        }}>{toast}</div>
+      )}
     </div>
   );
 }
