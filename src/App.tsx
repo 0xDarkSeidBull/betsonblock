@@ -143,6 +143,10 @@ export default function App() {
   const totalLiveStaked = rounds.reduce((s, r) => s + r.totalStaked, 0);
   const totalLivePlayers = rounds.reduce((s, r) => s + r.players, 0);
 
+  if (view === "pvp") {
+    return <PvpPage onBack={() => goView("home")} />;
+  }
+
   if (view === "home") {
     return (
       <>
@@ -152,7 +156,10 @@ export default function App() {
               <img src="https://raw.githubusercontent.com/dopedopex/your-friendly-helper/main/logo.png" alt="BetsOnBlock" width={36} height={36} style={{ borderRadius: 10, objectFit: "cover" }} />
               <div><h1>Bets<b>On</b>Block</h1></div>
             </div>
-            <div style={{ flex: 1, display: "flex", justifyContent: "center" }}><HeaderStats /></div>
+            <div style={{ flex: 1, display: "flex", justifyContent: "center", gap: 10 }}>
+              <HeaderStats />
+              <PvpButton onClick={() => goView("pvp")} />
+            </div>
             <div className="top-right">
               <div className="live-head"><span className="pulse" /> Block <b className="mono" style={{ marginLeft: 4 }}>#{head?.toLocaleString() ?? "…"}</b></div>
               <button className="btn btn-primary btn-sm" onClick={() => goView("zone")}>Enter Zone</button>
@@ -175,7 +182,10 @@ export default function App() {
             <img src="https://raw.githubusercontent.com/dopedopex/your-friendly-helper/main/logo.png" alt="BetsOnBlock" width={36} height={36} style={{ borderRadius: 10, objectFit: "cover" }} />
             <div><h1>Bets<b>On</b>Block</h1></div>
           </div>
-          <div style={{ flex: 1, display: "flex", justifyContent: "center" }}><HeaderStats /></div>
+          <div style={{ flex: 1, display: "flex", justifyContent: "center", gap: 10 }}>
+            <HeaderStats />
+            <PvpButton onClick={() => goView("pvp")} />
+          </div>
           <div className="top-right">
             <div className="live-head"><span className="pulse" /> Block <b className="mono" style={{ marginLeft: 4 }}>#{head?.toLocaleString() ?? "…"}</b></div>
             <WalletButton />
