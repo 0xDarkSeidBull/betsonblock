@@ -8,6 +8,7 @@ import ModeHelpModal from "./ModeHelpModal";
 import * as W from "../lib/wallet";
 import LeverSwitch from "./LeverSwitch";
 import BetToast, { type BetToastData } from "./BetToast";
+import PvpWheel from "./PvpWheel";
 
 const BET = 0.01;
 
@@ -310,6 +311,18 @@ export default function RoundCard({
           {/* digit / number / pvp → grid or input, single bet button */}
           {mode.kind !== "binary" && (
             <div className="pm-other">
+              {mode.kind === "pvp" && (
+                <PvpWheel
+                  msLeft={isOpen ? msToLock : msToSettle}
+                  totalMs={isOpen ? (round.lockAt - round.openAt) : (round.settleAt - round.lockAt)}
+                  players={round.players}
+                  pot={totalPot}
+                  estBlock={head != null ? head + Math.round(msToSettle / 200) : null}
+                  locked={isLocked}
+                  settled={settled}
+                  winnerIndex={settled && round.result ? Math.floor((Number(BigInt(round.result.block.hash) % 60n))) : null}
+                />
+              )}
               {mode.kind === "digit" && (
                 <div className="pick-grid">{HEX.map((d) => (
                   <button key={d} className={`pick ${pick === d ? "sel" : ""}`}
