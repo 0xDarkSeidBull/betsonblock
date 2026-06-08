@@ -18,6 +18,28 @@ import YourPointsModal from "./components/YourPointsModal";
 import HeaderStats from "./components/HeaderStats";
 import PvpPage from "./components/PvpPage";
 
+function PvpButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 8,
+        background: "#7c3aed", color: "#fff", border: "3px solid #000",
+        borderRadius: 12, padding: "12px 20px", fontWeight: 900,
+        fontFamily: "'Space Grotesk',system-ui,sans-serif",
+        letterSpacing: ".08em", textTransform: "uppercase",
+        boxShadow: "5px 5px 0 0 rgba(0,0,0,.9)", cursor: "pointer",
+        fontSize: 13, lineHeight: 1,
+      }}
+      onMouseDown={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "translate(3px,3px)"; (e.currentTarget as HTMLButtonElement).style.boxShadow = "2px 2px 0 0 rgba(0,0,0,.9)"; }}
+      onMouseUp={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = ""; (e.currentTarget as HTMLButtonElement).style.boxShadow = "5px 5px 0 0 rgba(0,0,0,.9)"; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = ""; (e.currentTarget as HTMLButtonElement).style.boxShadow = "5px 5px 0 0 rgba(0,0,0,.9)"; }}
+    >
+      <span style={{ fontSize: 14 }}>⚔</span> PVP
+    </button>
+  );
+}
+
 export default function App() {
   const initialView = (): "home" | "zone" | "pvp" => {
     if (typeof window === "undefined") return "home";
