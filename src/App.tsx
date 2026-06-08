@@ -16,15 +16,20 @@ import WinnersMarquee from "./components/WinnersMarquee";
 import PointsToast from "./components/PointsToast";
 import YourPointsModal from "./components/YourPointsModal";
 import HeaderStats from "./components/HeaderStats";
+import PvpPage from "./components/PvpPage";
 
 export default function App() {
-  const [view, setView] = React.useState<"home" | "zone">(
-    typeof window !== "undefined" && window.location.pathname.startsWith("/bettingzone") ? "zone" : "home"
-  );
+  const initialView = (): "home" | "zone" | "pvp" => {
+    if (typeof window === "undefined") return "home";
+    if (window.location.pathname.startsWith("/pvp")) return "pvp";
+    if (window.location.pathname.startsWith("/bettingzone")) return "zone";
+    return "home";
+  };
+  const [view, setView] = React.useState<"home" | "zone" | "pvp">(initialView);
 
-  const goView = React.useCallback((next: "home" | "zone") => {
+  const goView = React.useCallback((next: "home" | "zone" | "pvp") => {
     setView(next);
-    const path = next === "zone" ? "/bettingzone" : "/";
+    const path = next === "zone" ? "/bettingzone" : next === "pvp" ? "/pvp" : "/";
     if (typeof window !== "undefined" && window.location.pathname !== path) {
       window.history.pushState({}, "", path);
     }
@@ -32,7 +37,7 @@ export default function App() {
 
   React.useEffect(() => {
     const onPop = () => {
-      setView(window.location.pathname.startsWith("/bettingzone") ? "zone" : "home");
+      setView(initialView());
     };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
