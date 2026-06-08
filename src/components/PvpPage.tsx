@@ -164,13 +164,25 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
     setStopOnTile(tile);
     setSpinAngle(target);
     setTimeout(() => {
-      setResolveModal(ended);
+      setEndedOverlay(ended);
     }, 3200);
     setTimeout(() => {
       setStopOnTile(null);
-      setResolveModal(null);
+      setEndedOverlay(null);
       setSpinAngle(0);
-    }, 8200);
+    }, 7200);
+  }
+
+  async function openVerify(round_id: number) {
+    setVerifyModal({ loading: true, data: null, round_id });
+    try {
+      const r = await fetch(`${API}/bets/round/${round_id}`, { cache: "no-store" });
+      if (!r.ok) throw new Error(`http_${r.status}`);
+      const j = await r.json();
+      setVerifyModal({ loading: false, data: j, round_id });
+    } catch (e: any) {
+      setVerifyModal({ loading: false, data: null, error: e?.message || "Failed to load", round_id });
+    }
   }
 
   // derived
