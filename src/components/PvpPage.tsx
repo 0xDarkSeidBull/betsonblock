@@ -571,50 +571,91 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
         </div>
       )}
 
-      {/* RESOLVE MODAL */}
-      {resolveModal && (
-        <div className="modal-bg">
-          <div className="modal" style={{
-            background: "#fff", color: "#0a0a0a", border: "4px solid #000",
-            boxShadow: "8px 8px 0 0 #000", maxWidth: 460, textAlign: "center",
+      {/* VERIFY MODAL */}
+      {verifyModal && (
+        <div className="modal-bg" onClick={() => setVerifyModal(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{
+            background: "#0a0a0a", color: "#fff7ed", border: "4px solid #000",
+            boxShadow: "8px 8px 0 0 #000", maxWidth: 540, textAlign: "left",
           }}>
-            <div style={{
-              fontSize: 11, letterSpacing: ".22em", color: "#6b7280", fontWeight: 800,
-            }}>ROUND #{resolveModal.round_id} RESULT</div>
-            <div style={{
-              fontFamily: "'Space Grotesk',system-ui,sans-serif",
-              fontSize: 40, fontWeight: 900, color: "#16a34a",
-              margin: "10px 0 6px",
-            }}>
-              Tile {resolveModal.winning_tile} Wins! 🎉
-            </div>
-            {(() => {
-              const myWin = myBets.find(
-                (b) => b.round_id === resolveModal.round_id && b.tile === resolveModal.winning_tile,
-              );
-              if (myWin) {
-                return (
-                  <div style={{
-                    background: "#dcfce7", border: "3px solid #000", borderRadius: 10,
-                    padding: "12px", margin: "10px 0",
-                    fontFamily: "'JetBrains Mono',monospace", fontWeight: 900, color: "#04130a",
-                  }}>
-                    You won on tile {myWin.tile} ({Number(myWin.amount).toFixed(3)} zkLTC bet)
-                  </div>
-                );
-              }
-              return (
-                <div style={{ color: "#6b7280", fontSize: 13, margin: "10px 0 14px" }}>
-                  Better luck next round.
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div>
+                <div style={{ fontSize: 10, letterSpacing: ".22em", color: "#9ca3af", fontWeight: 800 }}>
+                  PROVABLY FAIR VERIFICATION
                 </div>
+                <h3 style={{ color: "#fff7ed", fontWeight: 900, margin: "4px 0 0", fontSize: 20 }}>
+                  Round #{verifyModal.round_id}
+                </h3>
+              </div>
+              <button onClick={() => setVerifyModal(null)}
+                style={{ background: "transparent", border: 0, cursor: "pointer", color: "#fff7ed" }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {verifyModal.loading && <div style={{ color: "#9ca3af", fontSize: 13, padding: 14 }}>Loading…</div>}
+            {verifyModal.error && <div style={{ color: "#fca5a5", fontSize: 13, padding: 14 }}>Error: {verifyModal.error}</div>}
+
+            {verifyModal.data && (() => {
+              const d = verifyModal.data!;
+              const rand = d.drand_randomness || "";
+              let bigStr = "—", remStr = "—";
+              try {
+                if (rand) {
+                  const big = BigInt("0x" + rand.replace(/^0x/, ""));
+                  bigStr = big.toString();
+                  remStr = (big % 30n).toString();
+                }
+              } catch { /* */ }
+              const rem = remStr === "—" ? null : Number(remStr);
+              const stepBox: React.CSSProperties = {
+                background: "#111827", border: "2px solid #1f2937", borderRadius: 8,
+                padding: 10, marginTop: 6, fontFamily: "'JetBrains Mono',monospace",
+                fontSize: 12, color: "#fde047", wordBreak: "break-all",
+              };
+              const label: React.CSSProperties = {
+                fontSize: 11, letterSpacing: ".14em", color: "#9ca3af", fontWeight: 800,
+                textTransform: "uppercase", marginTop: 12,
+              };
+              return (
+                <>
+                  <div style={label}>Step 1 — Drand Randomness</div>
+                  <div style={{ fontSize: 11, color: "#9ca3af" }}>(fetched from decentralized network)</div>
+                  <div style={stepBox}>{rand || "—"}</div>
+
+                  <div style={label}>Step 2 — Convert hex to BigInt</div>
+                  <div style={stepBox}>
+                    <span style={{ color: "#9ca3af" }}>BigInt("0x" + randomness) =</span><br />
+                    {bigStr}
+                  </div>
+
+                  <div style={label}>Step 3 — Modulo 30 (get value 0–29)</div>
+                  <div style={stepBox}>
+                    <span style={{ color: "#9ca3af" }}>BigInt % 30 =</span> {remStr}
+                  </div>
+
+                  <div style={label}>Step 4 — Add 1 (tiles are 1–30)</div>
+                  <div style={{ ...stepBox, color: "#22c55e", fontWeight: 900, fontSize: 14 }}>
+                    {remStr} + 1 = Tile {d.winning_tile} ✅
+                  </div>
+
+                  {d.drand_verify_url && (
+                    <a href={d.drand_verify_url} target="_blank" rel="noreferrer"
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        marginTop: 16, textDecoration: "none",
+                        background: "#fde047", color: "#0a0a0a",
+                        border: "3px solid #000", borderRadius: 10,
+                        padding: "10px 14px", fontFamily: "'Space Grotesk',system-ui,sans-serif",
+                        fontWeight: 900, fontSize: 13, letterSpacing: ".04em",
+                        boxShadow: "4px 4px 0 0 #000",
+                      }}>
+                      <Shield size={13} /> ↗ Verify on Drand
+                    </a>
+                  )}
+                </>
               );
             })()}
-            {resolveModal.drand_verify_url && (
-              <a href={resolveModal.drand_verify_url} target="_blank" rel="noreferrer"
-                className="verify-btn" style={{ display: "inline-flex", textDecoration: "none" }}>
-                <Shield size={12} style={{ marginRight: 6 }} /> Verify on Drand
-              </a>
-            )}
           </div>
         </div>
       )}
