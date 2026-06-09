@@ -110,8 +110,10 @@ function normalizeEndedRound(raw: any): EndedRound | null {
     drand_verify_url: raw?.drand_verify_url,
     drand_round: raw?.drand_target_round ?? raw?.drand_round,
     payouts: Array.isArray(raw?.payouts) ? raw.payouts as Payout[] : [],
+    is_bonanza: Number(raw?.is_bonanza) === 1 ? 1 : 0,
   };
 }
+
 
 export default function PvpPage({ onBack }: { onBack: () => void }) {
   const { address, isConnected } = useAccount();
