@@ -210,14 +210,9 @@ export default function MyBetsModal({
               ) : err ? (
                 <Empty color="#dc2626">Failed to load: {err}</Empty>
               ) : rounds.length === 0 ? (
-                <Empty>No bets yet</Empty>
+                <Empty>No bets placed yet this round.</Empty>
               ) : (
-                <div style={{
-                  display: "grid",
-                  gridTemplateColumns: `repeat(${pageRounds.length}, minmax(0, 1fr))`,
-                  gap: 22,
-                  alignItems: "start",
-                }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {pageRounds.map((r) => <RoundCard key={r.id} r={r} />)}
                 </div>
               )}
