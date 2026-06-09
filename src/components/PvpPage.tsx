@@ -269,6 +269,7 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
   React.useEffect(() => () => {
     clearHistoryRetry();
     if (zeroHoldTimerRef.current != null) window.clearTimeout(zeroHoldTimerRef.current);
+    zeroHoldCallbacksRef.current = [];
   }, [clearHistoryRetry]);
   React.useEffect(() => {
     loadHistory();
