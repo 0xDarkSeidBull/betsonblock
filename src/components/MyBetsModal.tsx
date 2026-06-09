@@ -88,6 +88,29 @@ export default function MyBetsModal({
   React.useEffect(() => { if (open) { setPage(0); fetchHistory(); } }, [open, fetchHistory]);
   React.useEffect(() => { if (open) fetchHistory(); }, [refreshKey]); // eslint-disable-line
 
+  // ESC to close + lock body scroll while open
+  React.useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open]);
+
+  // Responsive: mobile = bottom sheet
+  const [isMobile, setIsMobile] = React.useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 640 : false
+  );
+  React.useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   const totalPages = Math.max(1, Math.ceil(rounds.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages - 1);
   const pageRounds = rounds.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
