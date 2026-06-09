@@ -59,12 +59,17 @@ export default function BetPanel({
   const totalAll = total * roundsNum;
   const lockedUI = isLocked || isCooldown;
 
+  const allTiles = React.useMemo(() => Array.from({ length: TILES }, (_, i) => i + 1), []);
   const setAll = (tiles: number[]) => setSelectedTiles(new Set(tiles));
-  const allTiles = Array.from({ length: TILES }, (_, i) => i + 1);
   const setEven = () => setAll(allTiles.filter((n) => n % 2 === 0));
   const setOdd = () => setAll(allTiles.filter((n) => n % 2 === 1));
   const setAllSel = () => setAll(allTiles);
   const clearSel = () => setAll([]);
+
+  // Derived active filter (no async state — instant + race-free)
+  const isAllActive = count === TILES;
+  const isEvenActive = !isAllActive && count === TILES / 2 && Array.from(selectedTiles).every((n) => n % 2 === 0);
+  const isOddActive = !isAllActive && count === TILES / 2 && Array.from(selectedTiles).every((n) => n % 2 === 1);
   const bumpAmt = (delta: number) => {
     const next = Math.max(0, +(amt + delta).toFixed(4));
     setAmount(String(next));
@@ -156,9 +161,9 @@ export default function BetPanel({
           {mode === "auto" ? "BLOCKS" : "TILES"} <b style={{ color: "#fff" }}>{count}</b> selected
         </div>
         <div style={{ display: "flex", gap: 6 }}>
-          <QuickBtn label="Even" onClick={setEven} />
-          <QuickBtn label="Odd" onClick={setOdd} />
-          <QuickBtn label="All" onClick={setAllSel} />
+          <QuickBtn label="Even" onClick={setEven} active={isEvenActive} />
+          <QuickBtn label="Odd" onClick={setOdd} active={isOddActive} />
+          <QuickBtn label="All" onClick={setAllSel} active={isAllActive} />
           <button onClick={clearSel} title="Clear" style={{
             background: "transparent", border: "1px solid rgba(255,255,255,.18)",
             color: "#a1a1aa", borderRadius: 6, padding: "6px 10px", cursor: "pointer", fontWeight: 700,

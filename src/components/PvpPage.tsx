@@ -78,6 +78,11 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
   const [history, setHistory] = React.useState<EndedRound[]>([]);
   const [myBets, setMyBets] = React.useState<MyBet[]>([]);
   const [selectedTiles, setSelectedTilesState] = React.useState<Set<number>>(new Set());
+  const selectedTilesRef = React.useRef<Set<number>>(new Set());
+  const updateSelection = React.useCallback((next: Set<number>) => {
+    selectedTilesRef.current = next;
+    setSelectedTilesState(new Set(next));
+  }, []);
   const [placing, setPlacing] = React.useState(false);
   const [autoCfg, setAutoCfg] = React.useState<AutoConfig | null>(null);
   const lastAutoBetRoundRef = React.useRef<number | null>(null);
@@ -350,18 +355,14 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
   const myBetsThisRound = myBets.filter((b) => status && b.round_id === status.round_id);
   const myTilesThisRound = new Set(myBetsThisRound.map((b) => b.tile));
 
-  const setSelectedTiles = React.useCallback((s: Set<number>) => {
-    setSelectedTilesState(s);
-  }, []);
+  const setSelectedTiles = updateSelection;
 
   const onSegmentClick = (tile: number) => {
     if (!addr) { openConnectModal?.(); return; }
     if (isLocked || isCooldown) return;
-    setSelectedTilesState((prev) => {
-      const next = new Set(prev);
-      if (next.has(tile)) next.delete(tile); else next.add(tile);
-      return next;
-    });
+    const next = new Set(selectedTilesRef.current);
+    if (next.has(tile)) next.delete(tile); else next.add(tile);
+    updateSelection(next);
   };
 
   const placeBetsForTiles = React.useCallback(async (tiles: number[], amt: number) => {
@@ -386,6 +387,7 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
     setPlacing(false);
     if (okCount > 0) {
       setToast(`✓ Bet placed on ${okCount} tile${okCount > 1 ? "s" : ""}`);
+      selectedTilesRef.current = new Set();
       setSelectedTilesState(new Set());
       loadMyBets();
       loadStatus();
@@ -420,6 +422,7 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
 
   // clear selection when round changes (so a fresh round starts clean)
   React.useEffect(() => {
+    selectedTilesRef.current = new Set();
     setSelectedTilesState(new Set());
   }, [status?.round_id]);
 
@@ -527,21 +530,22 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 14, marginTop: 18 }}>
           <div style={{
             background: "#0a0a0c", border: "1px solid rgba(255,255,255,.08)",
-            borderRadius: 14, padding: 14, color: "#e4e4e7",
+            borderRadius: 16, padding: 18, color: "#e4e4e7",
           }}>
-            <div style={{ fontSize: 10, letterSpacing: ".18em", color: "#71717a", fontWeight: 800, marginBottom: 6 }}>
-              <Shield size={11} style={{ verticalAlign: "middle", marginRight: 4 }} /> DRAND TARGET
+            <div style={{ fontSize: 10, letterSpacing: ".18em", color: "#a1a1aa", fontWeight: 800, marginBottom: 8 }}>
+              <Shield size={11} style={{ verticalAlign: "middle", marginRight: 4, color: "#fb923c" }} /> DRAND TARGET
             </div>
-            <div style={{ fontFamily: "ui-monospace,monospace", fontWeight: 900, fontSize: 18, color: "#fff", marginBottom: 10 }}>
+            <div style={{ fontFamily: "ui-monospace,monospace", fontWeight: 900, fontSize: 20, color: "#fff", marginBottom: 12 }}>
               #{status?.drand_target_round ?? "—"}
             </div>
             {status?.drand_verify_url && (
               <a href={status.drand_verify_url} target="_blank" rel="noreferrer"
                 style={{
-                  display: "inline-flex", alignItems: "center", gap: 4,
-                  background: "transparent", color: "#fb923c", textDecoration: "none",
-                  border: "1px solid rgba(249,115,22,.5)", borderRadius: 8,
-                  padding: "6px 10px", fontSize: 11, fontWeight: 800,
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  background: "#fb923c", color: "#1c1917", textDecoration: "none",
+                  border: 0, borderRadius: 8,
+                  padding: "8px 12px", fontSize: 11, fontWeight: 900,
+                  letterSpacing: ".12em", textTransform: "uppercase",
                 }}>
                 Verify on Drand <ExternalLink size={11} />
               </a>
@@ -549,19 +553,19 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
           </div>
           <div style={{
             background: "#0a0a0c", border: "1px solid rgba(255,255,255,.08)",
-            borderRadius: 14, padding: 14, color: "#e4e4e7",
+            borderRadius: 16, padding: 18, color: "#e4e4e7",
           }}>
-            <div style={{ fontSize: 10, letterSpacing: ".18em", color: "#71717a", fontWeight: 800, marginBottom: 8 }}>
-              <History size={11} style={{ verticalAlign: "middle", marginRight: 4 }} /> ENDED ROUNDS
+            <div style={{ fontSize: 10, letterSpacing: ".18em", color: "#a1a1aa", fontWeight: 800, marginBottom: 10 }}>
+              <History size={11} style={{ verticalAlign: "middle", marginRight: 4, color: "#fb923c" }} /> ENDED ROUNDS
             </div>
             {history.length === 0 && <div style={{ fontSize: 12, color: "#52525b" }}>No settled rounds yet.</div>}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {history.map((r) => (
                 <button key={r.round_id} onClick={() => openVerify(r.round_id)}
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 6,
-                    background: "rgba(34,197,94,.1)", color: "#86efac",
-                    border: "1px solid rgba(34,197,94,.35)", borderRadius: 8,
+                    background: "rgba(249,115,22,.10)", color: "#fb923c",
+                    border: "1px solid rgba(249,115,22,.45)", borderRadius: 8,
                     padding: "6px 10px", fontFamily: "ui-monospace,monospace",
                     fontWeight: 800, fontSize: 11, cursor: "pointer",
                   }}>
