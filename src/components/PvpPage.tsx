@@ -2,15 +2,56 @@ import React from "react";
 import { ArrowLeft, Shield, History, ExternalLink } from "lucide-react";
 import { useAccount } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { BrowserProvider, Contract, parseEther } from "ethers";
 import PvpWheelVisual from "./PvpWheelVisual";
 import BetPanel, { AutoConfig } from "./BetPanel";
 import { sounds } from "../lib/pvpSounds";
 
-const API = "https://lit-api.test-hub.xyz";
+const API = "https://betsonblock-api.test-hub.xyz";
 const STATUS_URL = `${API}/bets/status`;
 const HISTORY_URL = `${API}/bets/history`;
-const PLACE_URL = `${API}/bets/place`;
+const CONFIRM_URL = `${API}/bets/confirm`;
 const TILES = 30;
+
+const CONTRACT_ADDRESS = "0xf82776F9b7FcC338d6a677F138f55eE0Cf26807A";
+const CHAIN_ID = 4441;
+const CHAIN_ID_HEX = "0x1159";
+const RPC_URL = "https://liteforge.rpc.caldera.xyz/http";
+const EXPLORER_TX = "https://liteforge.explorer.caldera.xyz/tx";
+const MIN_BET = 0.001;
+
+const BET_ABI = [
+  {
+    inputs: [{ internalType: "uint8", name: "tile", type: "uint8" }],
+    name: "placeBet",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+] as const;
+
+async function ensureLiteForge() {
+  const eth = (window as any).ethereum;
+  if (!eth) throw new Error("No wallet found. Install MetaMask.");
+  try {
+    await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID_HEX }] });
+  } catch (e: any) {
+    if (e?.code === 4902) {
+      await eth.request({
+        method: "wallet_addEthereumChain",
+        params: [{
+          chainId: CHAIN_ID_HEX,
+          chainName: "LiteForge",
+          rpcUrls: [RPC_URL],
+          nativeCurrency: { name: "zkLTC", symbol: "zkLTC", decimals: 18 },
+          blockExplorerUrls: ["https://liteforge.explorer.caldera.xyz"],
+        }],
+      });
+    } else {
+      throw e;
+    }
+  }
+}
 
 
 type Status = {
