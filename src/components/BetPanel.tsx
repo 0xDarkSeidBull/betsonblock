@@ -170,7 +170,7 @@ export default function BetPanel({
 
       {/* AMOUNT */}
       <div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, gap: 8, flexWrap: "wrap" }}>
           <div className="side-head" style={{ fontSize: 13, marginBottom: 0 }}>
             {mode === "auto" ? "zkLTC" : "Amount"} <span style={{ color: "#64748b", fontWeight: 600 }}>· Min 0.01</span>
           </div>
