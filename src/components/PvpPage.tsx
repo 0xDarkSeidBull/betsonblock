@@ -7,7 +7,7 @@ import PvpWheelVisual from "./PvpWheelVisual";
 import BetPanel, { AutoConfig } from "./BetPanel";
 import { sounds } from "../lib/pvpSounds";
 
-const API = "https://betsonblock-api.test-hub.xyz";
+const API = "https://lit-api.test-hub.xyz";
 const STATUS_URL = `${API}/bets/status`;
 const HISTORY_URL = `${API}/bets/history`;
 const CONFIRM_URL = `${API}/bets/confirm`;
