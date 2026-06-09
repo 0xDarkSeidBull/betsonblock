@@ -251,8 +251,8 @@ export default function BetPanel({
 
       {/* MY BETS */}
       <div style={{ borderTop: "1px solid rgba(15,23,42,.10)", paddingTop: 10 }}>
-        <div style={{ fontSize: 10, letterSpacing: ".18em", color: "#64748b", fontWeight: 800, marginBottom: 6 }}>
-          MY BETS THIS ROUND
+        <div className="side-head" style={{ fontSize: 13, marginBottom: 6 }}>
+          My Bets This Round
         </div>
         {myBets.length === 0 ? (
           <div style={{ fontSize: 11, color: "#64748b" }}>No bets yet this round.</div>
