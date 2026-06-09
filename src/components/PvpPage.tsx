@@ -458,12 +458,12 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
       </div>
 
       <div className="wrap">
-        <button className="back-link" onClick={onBack}><ArrowLeft size={14} /> Back to home</button>
+        <button className="back-link" onClick={onBack} style={{ color: "#0f172a" }}><ArrowLeft size={14} /> Back to home</button>
 
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 18 }}>
           <div>
-            <h1 className="page-title">PVP Wheel</h1>
-            <p className="page-sub">Bet on tiles 1–30. Drand decides the winner. One bet per tile per round.</p>
+            <h1 className="page-title" style={{ color: "#0f172a" }}>PVP Wheel</h1>
+            <p className="page-sub" style={{ color: "#475569" }}>Bet on tiles 1–30. Drand decides the winner. One bet per tile per round.</p>
           </div>
         </div>
 
