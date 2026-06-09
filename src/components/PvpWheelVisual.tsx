@@ -1,7 +1,9 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import { TILE_ANGLES } from "../lib/wheelMath";
 import { sounds } from "../lib/pvpSounds";
 import Coin from "./Coin";
+
 
 
 const TILE_COUNT = 30;
@@ -27,6 +29,7 @@ export default function PvpWheelVisual({
   pot,
   winningTile,
   animationRoundId,
+  isBonanza = false,
   myTiles,
   selectedTiles,
   tilesWithBets,
@@ -48,6 +51,7 @@ export default function PvpWheelVisual({
   pot: number;
   winningTile?: number | null;
   animationRoundId?: number | null;
+  isBonanza?: boolean;
   myTiles: Set<number>;
   selectedTiles?: Set<number>;
   tilesWithBets?: Set<number>;
@@ -56,6 +60,7 @@ export default function PvpWheelVisual({
   soundOn?: boolean;
   onAnimationComplete?: () => void;
 }) {
+
 
   // ---- animation state ----
   const [highlighted, setHighlighted] = React.useState<number | null>(null);
@@ -74,8 +79,29 @@ export default function PvpWheelVisual({
   const lastTickSecRef = React.useRef<number>(-1);
   const winningTileRef = React.useRef<number | null>(null);
   const animationRunningRef = React.useRef<boolean>(false);
+  const isBonanzaRef = React.useRef<boolean>(false);
+  const [bonanzaActive, setBonanzaActive] = React.useState(false);
+  const [bonanzaOverlay, setBonanzaOverlay] = React.useState(false);
+  const [goldFlash, setGoldFlash] = React.useState(false);
 
   const play = React.useCallback((fn: () => void) => { if (soundOn) fn(); }, [soundOn]);
+
+  const playBonanza = React.useCallback(() => {
+    if (!soundOn) return;
+    try {
+      const a = new (window.AudioContext || (window as any).webkitAudioContext)();
+      [400,500,600,800,1000,1200].forEach((f, i) => {
+        const o = a.createOscillator(), g = a.createGain();
+        o.connect(g); g.connect(a.destination);
+        o.frequency.value = f;
+        g.gain.setValueAtTime(0.12, a.currentTime + i * 0.12);
+        g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + i * 0.12 + 0.25);
+        o.start(a.currentTime + i * 0.12);
+        o.stop(a.currentTime + i * 0.12 + 0.25);
+      });
+    } catch (e) { /* ignore */ }
+  }, [soundOn]);
+
 
   // ---- countdown tick during open ----
   const secsLeft = Math.max(0, Math.ceil(timeLeftMs / 1000));
@@ -117,17 +143,20 @@ export default function PvpWheelVisual({
     animRanForRoundRef.current = animationKey;
     winningTileRef.current = wt;
     animationRunningRef.current = true;
+    isBonanzaRef.current = isBonanza;
     let cancelled = false;
 
     const run = async () => {
       const winningTile = wt; // local stable copy used throughout
-      console.log("[Animation] Starting for round", animationKey, "winning tile:", winningTile);
+      const bonanza = isBonanzaRef.current;
+      console.log("[Animation] Starting for round", animationKey, "winning tile:", winningTile, "bonanza:", bonanza);
       setAnimating(true);
       setPhase("sequence");
       setWinnerTile(null);
       setDimOthers(false);
       setShake(false);
       setBlinkSet(null);
+      setBonanzaActive(bonanza);
       setCenter({ line1: `ROUND #${animationKey}`, line2: "RESOLVING", line3: "SCANNING TILES" });
 
       // PHASE A — click each tile one by one 1..30
@@ -152,6 +181,7 @@ export default function PvpWheelVisual({
         setBlinkSet(null);
         await sleep(45);
       }
+
 
       // PHASE C — even tiles blink
       if (cancelled) return;
@@ -183,6 +213,22 @@ export default function PvpWheelVisual({
       if (cancelled) return;
       setPhase("sweep");
       setCenter({ line1: `ROUND #${animationKey}`, line2: "DRAND", line3: "PICKING WINNER" });
+
+      // BONANZA: 3 gold screen flashes + gold tile pulse before the sweep
+      if (bonanza) {
+        for (let f = 0; f < 3; f++) {
+          if (cancelled) return;
+          setGoldFlash(true);
+          await sleep(100);
+          setGoldFlash(false);
+          await sleep(80);
+        }
+        const allTiles = new Set<number>(Array.from({ length: TILE_COUNT }, (_, i) => i + 1));
+        setBlinkSet(allTiles);
+        await sleep(280);
+        setBlinkSet(null);
+        await sleep(80);
+      }
 
       let cur = 1;
       setHighlighted(cur);
@@ -224,17 +270,24 @@ export default function PvpWheelVisual({
       setHighlighted(null);
       setDimOthers(true);
       setShake(true);
-      play(() => sounds.jackpot());
+      if (bonanza) {
+        playBonanza();
+        setBonanzaOverlay(true);
+      } else {
+        play(() => sounds.jackpot());
+      }
       const youWon = (myPayout ?? 0) > 0;
       setCenter({
-        line1: `🏆 TILE ${winningTile} WINS!`,
+        line1: bonanza ? `🎉 BONANZA · TILE ${winningTile}!` : `🏆 TILE ${winningTile} WINS!`,
         line2: `Pool: ${pot.toFixed(3)} zkLTC`,
-        line3: youWon ? `YOU WON! +${(myPayout ?? 0).toFixed(3)} zkLTC` : "Better luck next time!",
+        line3: bonanza
+          ? "+10,000 POINTS to all winners!"
+          : (youWon ? `YOU WON! +${(myPayout ?? 0).toFixed(3)} zkLTC` : "Better luck next time!"),
       });
       setTimeout(() => setShake(false), 600);
-      // Hold the winner on screen — parent already shows "NEXT IN Xs"
-      // so we do NOT run a separate 5..1 countdown here.
-      await sleep(2200);
+      // Hold the winner on screen
+      await sleep(bonanza ? 5000 : 2200);
+      if (bonanza) setBonanzaOverlay(false);
 
       // PHASE H — reset + flash, hand control back to parent status display
       if (cancelled) return;
@@ -245,12 +298,15 @@ export default function PvpWheelVisual({
       setWinnerTile(null);
       setDimOthers(false);
       setBlinkSet(null);
+      setBonanzaActive(false);
       setPhase("idle");
       setCenter({ line1: "ROUND OPEN", timer: true });
       setAnimating(false);
       animationRunningRef.current = false;
       onAnimationComplete?.();
     };
+
+
 
 
     run();
@@ -283,6 +339,16 @@ export default function PvpWheelVisual({
     const phaseGlow = phase === "sweep" || phase === "new-round";
 
     if (isWin) {
+      if (bonanzaActive) {
+        return {
+          fill: "rgba(251,191,36,0.7)",
+          stroke: "rgba(253,224,71,1)",
+          strokeWidth: 3.4,
+          glow: "drop-shadow(0 0 40px rgba(253,224,71,1))",
+          opacity: 1,
+          transform: "scale(1.12)",
+        };
+      }
       return {
         fill: "rgba(34,197,94,0.55)",
         stroke: "rgba(52,211,153,1)",
@@ -296,8 +362,12 @@ export default function PvpWheelVisual({
       return { fill: "rgba(15,23,42,0.5)", stroke: "rgba(148,163,184,0.15)", strokeWidth: 1, glow: "", opacity: 0.25, transform: "none" };
     }
     if (blink) {
+      if (bonanzaActive) {
+        return { fill: "rgba(251,191,36,0.55)", stroke: "rgba(253,224,71,1)", strokeWidth: 2.4, glow: "drop-shadow(0 0 22px rgba(253,224,71,0.9))", opacity: 1, transform: "none" };
+      }
       return { fill: "rgba(249,115,22,0.45)", stroke: "rgba(249,115,22,1)", strokeWidth: 2, glow: "drop-shadow(0 0 16px rgba(249,115,22,0.7))", opacity: 1, transform: "none" };
     }
+
     if (isHi) {
       return {
         fill: phase === "sweep" ? "rgba(168,85,247,0.42)" : "rgba(249,115,22,0.4)",
@@ -544,7 +614,70 @@ export default function PvpWheelVisual({
         .pvp-sol-loader span:nth-child(2) { background: linear-gradient(90deg, #22d3ee, #34d399); transform: skewX(-22deg) translateX(-8px); }
         .pvp-sol-loader span:nth-child(3) { background: linear-gradient(90deg, #a855f7, #7c3aed); transform: skewX(-22deg) translateX(8px); }
         @keyframes pvpLogoIn { from { opacity: 0; transform: scale(.86); } 35% { opacity: 1; } to { opacity: 1; transform: scale(1); } }
+        @keyframes bonanzaPulse { 0%,100% { transform: scale(1); text-shadow: 0 0 30px rgba(253,224,71,.95), 0 0 60px rgba(251,191,36,.7); } 50% { transform: scale(1.06); text-shadow: 0 0 50px rgba(253,224,71,1), 0 0 100px rgba(251,191,36,.9); } }
+        @keyframes bonanzaBorder { 0%,100% { box-shadow: inset 0 0 0 4px rgba(253,224,71,1), 0 0 60px rgba(251,191,36,.7); } 50% { box-shadow: inset 0 0 0 8px rgba(253,224,71,1), 0 0 100px rgba(251,191,36,.95); } }
+        @keyframes bonanzaRain { 0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
+        @keyframes bonanzaFlash { 0%,100% { opacity: 0.85; } 50% { opacity: 0.55; } }
       `}</style>
+      {goldFlash && createPortal(
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 99998,
+          background: "radial-gradient(circle, rgba(253,224,71,.9), rgba(251,191,36,.55))",
+          pointerEvents: "none",
+        }} />, document.body
+      )}
+      {bonanzaOverlay && createPortal(
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 99999,
+          background: "radial-gradient(ellipse at center, #7c2d12 0%, #000 80%)",
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          pointerEvents: "none", overflow: "hidden",
+          animation: "bonanzaBorder 1.6s ease-in-out infinite",
+        }}>
+          {/* gold rain */}
+          {Array.from({ length: 50 }).map((_, i) => {
+            const left = Math.random() * 100;
+            const delay = Math.random() * 2;
+            const dur = 2 + Math.random() * 2;
+            const sz = 8 + Math.random() * 14;
+            return (
+              <div key={i} style={{
+                position: "absolute", left: `${left}vw`, top: 0,
+                fontSize: sz, color: "#fde047",
+                animation: `bonanzaRain ${dur}s linear ${delay}s infinite`,
+                textShadow: "0 0 8px rgba(253,224,71,.9)",
+              }}>{Math.random() > 0.5 ? "✨" : "⭐"}</div>
+            );
+          })}
+          <div style={{
+            position: "relative", zIndex: 2, textAlign: "center",
+            fontFamily: "'Space Grotesk', system-ui, sans-serif",
+          }}>
+            <div style={{
+              fontSize: "clamp(36px, 7vw, 88px)", fontWeight: 900,
+              color: "#fde047", letterSpacing: ".04em",
+              animation: "bonanzaPulse 1.1s ease-in-out infinite",
+              marginBottom: 16,
+            }}>🎉 BONANZA ROUND! 🎉</div>
+            <div style={{
+              fontSize: "clamp(28px, 5vw, 56px)", fontWeight: 900,
+              color: "#fbbf24", marginBottom: 20,
+              textShadow: "0 0 20px rgba(251,191,36,.8)",
+            }}>🏆 TILE {winnerTile ?? winningTileRef.current} WINS!</div>
+            <div style={{
+              fontSize: "clamp(18px, 2.4vw, 28px)", fontWeight: 800,
+              color: "#00d4ff", marginBottom: 14,
+              textShadow: "0 0 14px rgba(0,212,255,.7)",
+            }}>+10,000 POINTS awarded to all winners!</div>
+            <div style={{
+              fontSize: "clamp(13px, 1.4vw, 18px)", fontWeight: 700,
+              color: "#94a3b8", letterSpacing: ".06em",
+              fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+            }}>POOL · {pot.toFixed(3)} zkLTC</div>
+          </div>
+        </div>, document.body
+      )}
     </div>
   );
 }
+
