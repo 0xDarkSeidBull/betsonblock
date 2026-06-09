@@ -92,6 +92,7 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
   const pendingAnimationRoundRef = React.useRef<number | null>(null);
   const animationTriggeredRoundRef = React.useRef<number | null>(null);
   const activeStatusRef = React.useRef<string | null>(null);
+  const activeRoundRef = React.useRef<number | null>(null);
   const historyRetryTimerRef = React.useRef<number | null>(null);
 
   // tick for countdown
@@ -176,6 +177,7 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
 
       lastPollStatusRef.current = j.status ?? null;
       activeStatusRef.current = j.status ?? null;
+      activeRoundRef.current = apiRoundId;
       if (apiRoundId != null) lastPollRoundRef.current = apiRoundId;
 
       setStatus({
@@ -210,7 +212,10 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
       if (normalized[0]) setLastResolvedRound((prev) => prev?.round_id === normalized[0].round_id ? prev : normalized[0]);
 
       const wantedRound = targetRoundId ?? pendingAnimationRoundRef.current;
-      const fallbackWinner = wantedRound == null && activeStatusRef.current === "cooldown" ? normalized[0] : null;
+      const latestResolvedCurrentRound = normalized[0]?.round_id === activeRoundRef.current ? normalized[0] : null;
+      const fallbackWinner = wantedRound == null && activeStatusRef.current !== "open"
+        ? (latestResolvedCurrentRound ?? (activeStatusRef.current === "cooldown" ? normalized[0] : null))
+        : null;
       const winner = wantedRound != null ? normalized.find((item) => item.round_id === wantedRound) : fallbackWinner;
       if (winner) {
         startAnimationForWinner(winner, wantedRound != null ? "history-exact" : "history-latest");
