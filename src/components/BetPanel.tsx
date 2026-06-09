@@ -153,7 +153,7 @@ export default function BetPanel({
       </div>
 
       {/* TILES SELECTION */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
         <div className="side-head" style={{ fontSize: 13, marginBottom: 0 }}>
           {mode === "auto" ? "Blocks" : "Tiles"} <b style={{ color: "#0f172a" }}>{count}</b> <span style={{ fontWeight: 600, color: "#475569" }}>selected</span>
         </div>
