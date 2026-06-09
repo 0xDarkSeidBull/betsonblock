@@ -26,6 +26,7 @@ export default function PvpWheelVisual({
   winningTile,
   animationRoundId,
   myTiles,
+  selectedTiles,
   tilesWithBets,
   myPayout,
   onTileClick,
@@ -46,12 +47,14 @@ export default function PvpWheelVisual({
   winningTile?: number | null;
   animationRoundId?: number | null;
   myTiles: Set<number>;
+  selectedTiles?: Set<number>;
   tilesWithBets?: Set<number>;
   myPayout?: number | null;
   onTileClick: (tile: number) => void;
   soundOn?: boolean;
   onAnimationComplete?: () => void;
 }) {
+
   // ---- animation state ----
   const [highlighted, setHighlighted] = React.useState<number | null>(null);
   const [blinkSet, setBlinkSet] = React.useState<Set<number> | null>(null);
