@@ -465,33 +465,6 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
             <h1 className="page-title" style={{ color: "#0f172a" }}>PVP Wheel</h1>
             <p className="page-sub" style={{ color: "#475569" }}>Bet on tiles 1–30. Drand decides the winner. One bet per tile per round.</p>
           </div>
-
-          {/* DRAND TARGET (top-right of header) */}
-          <div style={{
-            background: "#ffffff", border: "2px solid #0f172a",
-            borderRadius: 14, padding: 16, boxShadow: "4px 4px 0 0 rgba(15,23,42,.9)", color: "#0f172a",
-            display: "flex", flexDirection: "column", gap: 10, minWidth: 280,
-          }}>
-            <div style={{ fontSize: 10, letterSpacing: ".18em", color: "#475569", fontWeight: 800 }}>
-              <Shield size={11} style={{ verticalAlign: "middle", marginRight: 4, color: "#7c5cff" }} />
-              DRAND · <span style={{ color: "#7c5cff" }}>TARGET</span>
-            </div>
-            <div style={{ borderTop: "1px solid rgba(15,23,42,.10)", paddingTop: 8 }}>
-              <div style={{ fontSize: 10, letterSpacing: ".18em", color: "#64748b", fontWeight: 800, marginBottom: 4 }}>
-                ROUND NUMBER
-              </div>
-              <div style={{ fontFamily: "ui-monospace,monospace", fontWeight: 900, fontSize: 20, color: "#0f172a" }}>
-                #{status?.drand_target_round ?? "—"}
-              </div>
-            </div>
-            {status?.drand_verify_url && (
-              <a href={status.drand_verify_url} target="_blank" rel="noreferrer"
-                className="verify-btn"
-                style={{ width: "100%", gap: 6, textDecoration: "none" }}>
-                Verify on Drand <ExternalLink size={12} />
-              </a>
-            )}
-          </div>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "320px 1fr 320px", gap: 22, alignItems: "start" }}>
@@ -515,41 +488,66 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
             onStopAuto={() => setAutoCfg(null)}
           />
 
-          {/* WHEEL */}
-          <div style={{
-            background: "radial-gradient(ellipse at center, #0f0f12 0%, #050507 75%)",
-            border: "1px solid #0f172a", borderRadius: 22,
-            boxShadow: "0 30px 60px -20px rgba(0,0,0,.7), inset 0 0 0 1px rgba(255,255,255,.02)",
-            padding: 24,
-            display: "flex", justifyContent: "center", alignItems: "center",
-            position: "relative", minHeight: 600,
-          }}>
-            <PvpWheelVisual
-              size={SIZE}
-              tiles={TILES}
-              roundId={status?.round_id ?? null}
-              timeLeftMs={visibleTimeLeftMs}
-              totalRoundMs={totalRoundMsRef.current}
-              isOpen={isOpen}
-              isLocked={isLocked}
-              isCooldown={isCooldown}
-              cooldownMs={cooldownMsLeft || cooldownSeconds * 1000}
-              players={myBets.filter((b) => b.round_id === status?.round_id).length}
-              pot={status?.total_pool ?? 0}
-              winningTile={animationWinner?.winning_tile ?? null}
-              animationRoundId={animationWinner?.round_id ?? null}
-              myTiles={myTilesThisRound}
-              selectedTiles={selectedTiles}
-              onTileClick={onSegmentClick}
-              onAnimationComplete={() => {
-                console.log("[Animation] completed", animationWinner);
-                clearHistoryRetry();
-                setAnimationWinner(null);
-                pendingAnimationRoundRef.current = null;
-                prevStatusRef.current = "";
-                prevRoundRef.current = null;
-              }}
-            />
+          {/* WHEEL COLUMN: Drand card above wheel */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* DRAND TARGET — centered above wheel */}
+            <div style={{
+              background: "#ffffff", border: "2px solid #0f172a",
+              borderRadius: 14, padding: 14, boxShadow: "4px 4px 0 0 rgba(15,23,42,.9)", color: "#0f172a",
+              display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16,
+              alignSelf: "center", minWidth: 360, maxWidth: 520, width: "100%",
+            }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <div style={{ fontSize: 10, letterSpacing: ".18em", color: "#475569", fontWeight: 800 }}>
+                  <Shield size={11} style={{ verticalAlign: "middle", marginRight: 4, color: "#7c5cff" }} />
+                  DRAND · <span style={{ color: "#7c5cff" }}>TARGET</span> · #{status?.drand_target_round ?? "—"}
+                </div>
+              </div>
+              {status?.drand_verify_url && (
+                <a href={status.drand_verify_url} target="_blank" rel="noreferrer"
+                  className="verify-btn"
+                  style={{ gap: 6, textDecoration: "none", whiteSpace: "nowrap" }}>
+                  Verify on Drand <ExternalLink size={12} />
+                </a>
+              )}
+            </div>
+
+            {/* WHEEL */}
+            <div style={{
+              background: "radial-gradient(ellipse at center, #0f0f12 0%, #050507 75%)",
+              border: "1px solid #0f172a", borderRadius: 22,
+              boxShadow: "0 30px 60px -20px rgba(0,0,0,.7), inset 0 0 0 1px rgba(255,255,255,.02)",
+              padding: 24,
+              display: "flex", justifyContent: "center", alignItems: "center",
+              position: "relative", minHeight: 600,
+            }}>
+              <PvpWheelVisual
+                size={SIZE}
+                tiles={TILES}
+                roundId={status?.round_id ?? null}
+                timeLeftMs={visibleTimeLeftMs}
+                totalRoundMs={totalRoundMsRef.current}
+                isOpen={isOpen}
+                isLocked={isLocked}
+                isCooldown={isCooldown}
+                cooldownMs={cooldownMsLeft || cooldownSeconds * 1000}
+                players={myBets.filter((b) => b.round_id === status?.round_id).length}
+                pot={status?.total_pool ?? 0}
+                winningTile={animationWinner?.winning_tile ?? null}
+                animationRoundId={animationWinner?.round_id ?? null}
+                myTiles={myTilesThisRound}
+                selectedTiles={selectedTiles}
+                onTileClick={onSegmentClick}
+                onAnimationComplete={() => {
+                  console.log("[Animation] completed", animationWinner);
+                  clearHistoryRetry();
+                  setAnimationWinner(null);
+                  pendingAnimationRoundRef.current = null;
+                  prevStatusRef.current = "";
+                  prevRoundRef.current = null;
+                }}
+              />
+            </div>
           </div>
 
           {/* ENDED ROUNDS (right column) */}
@@ -558,16 +556,15 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
             borderRadius: 14, padding: 18, boxShadow: "4px 4px 0 0 rgba(15,23,42,.9)", color: "#0f172a",
             display: "flex", flexDirection: "column", gap: 12,
           }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-              <div style={{ fontSize: 10, letterSpacing: ".18em", color: "#475569", fontWeight: 800 }}>
-                <History size={11} style={{ verticalAlign: "middle", marginRight: 4, color: "#7c5cff" }} />
-                ENDED · <span style={{ color: "#7c5cff" }}>ROUNDS</span>
-              </div>
-              <div style={{
-                fontSize: 9, padding: "3px 8px", borderRadius: 999,
+            <div className="side-head" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 0 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <History size={15} /> Ended Rounds
+              </span>
+              <span style={{
+                fontSize: 10, padding: "3px 8px", borderRadius: 999,
                 background: "rgba(124,92,255,.12)", color: "#7c5cff",
                 border: "1px solid rgba(124,92,255,.4)", fontWeight: 800, letterSpacing: ".12em",
-              }}>{history.length} TOTAL</div>
+              }}>{history.length} TOTAL</span>
             </div>
             <div style={{ borderTop: "1px solid rgba(15,23,42,.10)", paddingTop: 10, maxHeight: 560, overflowY: "auto" }}>
               {history.length === 0 ? (
