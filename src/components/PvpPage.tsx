@@ -255,15 +255,18 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
         : null;
       const winner = wantedRound != null ? normalized.find((item) => item.round_id === wantedRound) : fallbackWinner;
       if (winner) {
-        startAnimationForWinner(winner, wantedRound != null ? "history-exact" : "history-latest");
+        runAfterVisibleZero(0, () => startAnimationForWinner(winner, wantedRound != null ? "history-exact" : "history-latest"));
       } else if (wantedRound != null) {
         console.log("[Animation] winner not ready yet", { wantedRound });
         scheduleWinnerRetry(wantedRound);
       }
     } catch (e) { console.error("[BetsOnBlock] history fetch error:", e); }
-  }, [scheduleWinnerRetry, startAnimationForWinner]);
+  }, [runAfterVisibleZero, scheduleWinnerRetry, startAnimationForWinner]);
   React.useEffect(() => { loadHistoryRef.current = loadHistory; }, [loadHistory]);
-  React.useEffect(() => () => clearHistoryRetry(), [clearHistoryRetry]);
+  React.useEffect(() => () => {
+    clearHistoryRetry();
+    if (zeroHoldTimerRef.current != null) window.clearTimeout(zeroHoldTimerRef.current);
+  }, [clearHistoryRetry]);
   React.useEffect(() => {
     loadHistory();
     const id = setInterval(loadHistory, 10000);
@@ -334,6 +337,7 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
   const timeLeftMs = status
     ? Math.max(0, (status.time_left_ms ?? 0) - (Date.now() - statusFetchedAt))
     : 0;
+  const visibleTimeLeftMs = Math.max(timeLeftMs, visibleRoundEndsAtRef.current - Date.now());
   const isLocked = status?.status === "locked";
   const isOpen = status?.status === "open";
   const isCooldown = status?.status === "cooldown";
@@ -443,7 +447,7 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
               size={SIZE}
               tiles={TILES}
               roundId={status?.round_id ?? null}
-              timeLeftMs={isCooldown ? 0 : timeLeftMs}
+              timeLeftMs={visibleTimeLeftMs}
               totalRoundMs={totalRoundMsRef.current}
               isOpen={isOpen}
               isLocked={isLocked}
