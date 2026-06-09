@@ -258,6 +258,7 @@ export default function PvpWheelVisual({
       setPhase("idle");
       setCenter({ line1: "ROUND OPEN", timer: true });
       setAnimating(false);
+      animationRunningRef.current = false;
       onAnimationComplete?.();
     };
 
