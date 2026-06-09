@@ -219,15 +219,16 @@ export default function PvpWheelVisual({
     const isWin = winnerTile === tileLabel;
     const blink = allBlink;
     const dim = dimOthers && !isWin;
+    const phaseGlow = phase === "sweep" || phase === "new-round";
 
     if (isWin) {
       return {
-        fill: "rgba(251,191,36,0.55)",
-        stroke: "rgba(251,191,36,1)",
+        fill: "rgba(34,197,94,0.55)",
+        stroke: "rgba(52,211,153,1)",
         strokeWidth: 3,
-        glow: "drop-shadow(0 0 30px rgba(251,191,36,0.95))",
+        glow: "drop-shadow(0 0 30px rgba(52,211,153,0.95))",
         opacity: 1,
-        transform: "scale(1.08)",
+        transform: "scale(1.09)",
       };
     }
     if (dim) {
@@ -237,7 +238,14 @@ export default function PvpWheelVisual({
       return { fill: "rgba(249,115,22,0.45)", stroke: "rgba(249,115,22,1)", strokeWidth: 2, glow: "drop-shadow(0 0 16px rgba(249,115,22,0.7))", opacity: 1, transform: "none" };
     }
     if (isHi) {
-      return { fill: "rgba(249,115,22,0.4)", stroke: "rgba(249,115,22,1)", strokeWidth: 2.4, glow: "drop-shadow(0 0 20px rgba(249,115,22,0.7))", opacity: 1, transform: "none" };
+      return {
+        fill: phase === "sweep" ? "rgba(168,85,247,0.42)" : "rgba(249,115,22,0.4)",
+        stroke: phase === "sweep" ? "rgba(217,70,239,1)" : "rgba(249,115,22,1)",
+        strokeWidth: 2.4,
+        glow: phase === "sweep" ? "drop-shadow(0 0 22px rgba(168,85,247,0.85))" : "drop-shadow(0 0 20px rgba(249,115,22,0.7))",
+        opacity: 1,
+        transform: "none"
+      };
     }
     if (isMine) {
       return { fill: "rgba(34,197,94,0.18)", stroke: "rgba(34,197,94,0.9)", strokeWidth: 2, glow: "drop-shadow(0 0 12px rgba(34,197,94,0.4))", opacity: 1, transform: "none" };
@@ -248,7 +256,7 @@ export default function PvpWheelVisual({
     if (hovered === tileLabel && isOpen && !animating) {
       return { fill: "rgba(255,255,255,0.08)", stroke: "rgba(255,255,255,0.5)", strokeWidth: 1.6, glow: "drop-shadow(0 0 10px rgba(255,255,255,0.2))", opacity: 1, transform: "none" };
     }
-    return { fill: "rgba(255,255,255,0.02)", stroke: "rgba(255,255,255,0.16)", strokeWidth: 1.1, glow: "", opacity: 0.7, transform: "none" };
+    return { fill: phaseGlow ? "rgba(245,158,11,0.12)" : "rgba(255,255,255,0.02)", stroke: phaseGlow ? "rgba(245,158,11,0.55)" : "rgba(255,255,255,0.16)", strokeWidth: 1.1, glow: "", opacity: 0.7, transform: "none" };
   };
 
   const fmtClock = (ms: number) => {
