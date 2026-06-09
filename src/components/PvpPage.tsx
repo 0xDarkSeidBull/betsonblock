@@ -93,6 +93,7 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
   // poll status every 1s (fast enough to catch short cooldown window)
   const lastPollStatusRef = React.useRef<string | null>(null);
   const lastPollRoundRef = React.useRef<number | null>(null);
+  const loadHistoryRef = React.useRef<() => void>(() => {});
   const loadStatus = React.useCallback(async () => {
     try {
       const r = await fetch(STATUS_URL, { cache: "no-store" });
@@ -110,7 +111,7 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
 
       if (enteringCooldown || roundChanged) {
         console.log("[Poll] round ended — fetching history for winner", { enteringCooldown, roundChanged, prevRound, newRound: j.round_id });
-        loadHistory();
+        loadHistoryRef.current?.();
       }
 
       lastPollStatusRef.current = j.status;
@@ -145,6 +146,7 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
       if (normalized[0]) setLastResolvedRound((prev) => prev?.round_id === normalized[0].round_id ? prev : normalized[0]);
     } catch (e) { console.error("[BetsOnBlock] history fetch error:", e); }
   }, []);
+  React.useEffect(() => { loadHistoryRef.current = loadHistory; }, [loadHistory]);
   React.useEffect(() => {
     loadHistory();
     const id = setInterval(loadHistory, 10000);
