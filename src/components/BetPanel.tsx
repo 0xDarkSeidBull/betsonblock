@@ -161,9 +161,9 @@ export default function BetPanel({
           {mode === "auto" ? "BLOCKS" : "TILES"} <b style={{ color: "#fff" }}>{count}</b> selected
         </div>
         <div style={{ display: "flex", gap: 6 }}>
-          <QuickBtn label="Even" onClick={setEven} />
-          <QuickBtn label="Odd" onClick={setOdd} />
-          <QuickBtn label="All" onClick={setAllSel} />
+          <QuickBtn label="Even" onClick={setEven} active={isEvenActive} />
+          <QuickBtn label="Odd" onClick={setOdd} active={isOddActive} />
+          <QuickBtn label="All" onClick={setAllSel} active={isAllActive} />
           <button onClick={clearSel} title="Clear" style={{
             background: "transparent", border: "1px solid rgba(255,255,255,.18)",
             color: "#a1a1aa", borderRadius: 6, padding: "6px 10px", cursor: "pointer", fontWeight: 700,
