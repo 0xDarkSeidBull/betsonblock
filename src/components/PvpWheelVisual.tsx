@@ -214,6 +214,22 @@ export default function PvpWheelVisual({
       setPhase("sweep");
       setCenter({ line1: `ROUND #${animationKey}`, line2: "DRAND", line3: "PICKING WINNER" });
 
+      // BONANZA: 3 gold screen flashes + gold tile pulse before the sweep
+      if (bonanza) {
+        for (let f = 0; f < 3; f++) {
+          if (cancelled) return;
+          setGoldFlash(true);
+          await sleep(100);
+          setGoldFlash(false);
+          await sleep(80);
+        }
+        const allTiles = new Set<number>(Array.from({ length: TILE_COUNT }, (_, i) => i + 1));
+        setBlinkSet(allTiles);
+        await sleep(280);
+        setBlinkSet(null);
+        await sleep(80);
+      }
+
       let cur = 1;
       setHighlighted(cur);
 
@@ -254,17 +270,24 @@ export default function PvpWheelVisual({
       setHighlighted(null);
       setDimOthers(true);
       setShake(true);
-      play(() => sounds.jackpot());
+      if (bonanza) {
+        playBonanza();
+        setBonanzaOverlay(true);
+      } else {
+        play(() => sounds.jackpot());
+      }
       const youWon = (myPayout ?? 0) > 0;
       setCenter({
-        line1: `🏆 TILE ${winningTile} WINS!`,
+        line1: bonanza ? `🎉 BONANZA · TILE ${winningTile}!` : `🏆 TILE ${winningTile} WINS!`,
         line2: `Pool: ${pot.toFixed(3)} zkLTC`,
-        line3: youWon ? `YOU WON! +${(myPayout ?? 0).toFixed(3)} zkLTC` : "Better luck next time!",
+        line3: bonanza
+          ? "+10,000 POINTS to all winners!"
+          : (youWon ? `YOU WON! +${(myPayout ?? 0).toFixed(3)} zkLTC` : "Better luck next time!"),
       });
       setTimeout(() => setShake(false), 600);
-      // Hold the winner on screen — parent already shows "NEXT IN Xs"
-      // so we do NOT run a separate 5..1 countdown here.
-      await sleep(2200);
+      // Hold the winner on screen
+      await sleep(bonanza ? 5000 : 2200);
+      if (bonanza) setBonanzaOverlay(false);
 
       // PHASE H — reset + flash, hand control back to parent status display
       if (cancelled) return;
@@ -275,12 +298,15 @@ export default function PvpWheelVisual({
       setWinnerTile(null);
       setDimOthers(false);
       setBlinkSet(null);
+      setBonanzaActive(false);
       setPhase("idle");
       setCenter({ line1: "ROUND OPEN", timer: true });
       setAnimating(false);
       animationRunningRef.current = false;
       onAnimationComplete?.();
     };
+
+
 
 
     run();
