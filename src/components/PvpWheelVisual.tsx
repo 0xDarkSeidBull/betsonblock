@@ -339,6 +339,16 @@ export default function PvpWheelVisual({
     const phaseGlow = phase === "sweep" || phase === "new-round";
 
     if (isWin) {
+      if (bonanzaActive) {
+        return {
+          fill: "rgba(251,191,36,0.7)",
+          stroke: "rgba(253,224,71,1)",
+          strokeWidth: 3.4,
+          glow: "drop-shadow(0 0 40px rgba(253,224,71,1))",
+          opacity: 1,
+          transform: "scale(1.12)",
+        };
+      }
       return {
         fill: "rgba(34,197,94,0.55)",
         stroke: "rgba(52,211,153,1)",
@@ -352,8 +362,12 @@ export default function PvpWheelVisual({
       return { fill: "rgba(15,23,42,0.5)", stroke: "rgba(148,163,184,0.15)", strokeWidth: 1, glow: "", opacity: 0.25, transform: "none" };
     }
     if (blink) {
+      if (bonanzaActive) {
+        return { fill: "rgba(251,191,36,0.55)", stroke: "rgba(253,224,71,1)", strokeWidth: 2.4, glow: "drop-shadow(0 0 22px rgba(253,224,71,0.9))", opacity: 1, transform: "none" };
+      }
       return { fill: "rgba(249,115,22,0.45)", stroke: "rgba(249,115,22,1)", strokeWidth: 2, glow: "drop-shadow(0 0 16px rgba(249,115,22,0.7))", opacity: 1, transform: "none" };
     }
+
     if (isHi) {
       return {
         fill: phase === "sweep" ? "rgba(168,85,247,0.42)" : "rgba(249,115,22,0.4)",
