@@ -620,6 +620,13 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
                 winningTile={animationWinner?.winning_tile ?? null}
                 animationRoundId={animationWinner?.round_id ?? null}
                 myTiles={myTilesThisRound}
+                myPayout={(() => {
+                  if (!addr || !animationWinner?.payouts) return null;
+                  const p = animationWinner.payouts.find(
+                    (x) => x.wallet?.toLowerCase() === addr
+                  );
+                  return p?.payout != null ? Number(p.payout) : 0;
+                })()}
                 selectedTiles={selectedTiles}
                 onTileClick={onSegmentClick}
                 onAnimationComplete={() => {
