@@ -1,4 +1,12 @@
-import { TileAngle } from '../types';
+export interface TileAngle {
+  id: number;
+  startDegrees: number;
+  endDegrees: number;
+  middleDegrees: number;
+  labelX: number;
+  labelY: number;
+  path: string;
+}
 
 const Q = 290; // Center coordinate
 const Mr = 270; // Outer radius
