@@ -133,6 +133,7 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
   const [lastResolvedRound, setLastResolvedRound] = React.useState<EndedRound | null>(null);
   const [cooldownSeconds, setCooldownSeconds] = React.useState<number>(0);
   const [toast, setToast] = React.useState<string | null>(null);
+  const [lastTxHash, setLastTxHash] = React.useState<string | null>(null);
   const [animationWinner, setAnimationWinner] = React.useState<EndedRound | null>(null);
 
   const prevRoundRef = React.useRef<number | null>(null);
