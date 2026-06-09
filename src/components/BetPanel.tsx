@@ -154,8 +154,8 @@ export default function BetPanel({
 
       {/* TILES SELECTION */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-        <div style={{ fontSize: 11, letterSpacing: ".14em", color: "#475569", fontWeight: 700 }}>
-          {mode === "auto" ? "BLOCKS" : "TILES"} <b style={{ color: "#0f172a" }}>{count}</b> selected
+        <div className="side-head" style={{ fontSize: 13, marginBottom: 0 }}>
+          {mode === "auto" ? "Blocks" : "Tiles"} <b style={{ color: "#0f172a" }}>{count}</b> <span style={{ fontWeight: 600, color: "#475569" }}>selected</span>
         </div>
         <div style={{ display: "flex", gap: 6 }}>
           <QuickBtn label="Even" onClick={setEven} active={isEvenActive} />
@@ -171,8 +171,8 @@ export default function BetPanel({
       {/* AMOUNT */}
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <div style={{ fontSize: 11, letterSpacing: ".14em", color: "#475569", fontWeight: 700 }}>
-            {mode === "auto" ? "zkLTC" : "AMOUNT"} <span style={{ color: "#64748b" }}>· MIN 0.01</span>
+          <div className="side-head" style={{ fontSize: 13, marginBottom: 0 }}>
+            {mode === "auto" ? "zkLTC" : "Amount"} <span style={{ color: "#64748b", fontWeight: 600 }}>· Min 0.01</span>
           </div>
           <div style={{ display: "flex", gap: 6 }}>
             <QuickBtn label="+0.01" onClick={() => bumpAmt(0.01)} />
