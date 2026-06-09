@@ -39,28 +39,9 @@ type RoundDetails = {
   drand_verify_url?: string;
 };
 
-function fmtClock(ms: number) {
-  const s = Math.max(0, Math.ceil(ms / 1000));
-  return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
-}
-
 function numOrNull(value: unknown) {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
-}
-
-// polar → cartesian for SVG segment paths
-function pt(cx: number, cy: number, r: number, deg: number) {
-  const a = ((deg - 90) * Math.PI) / 180;
-  return [cx + r * Math.cos(a), cy + r * Math.sin(a)] as const;
-}
-function arcPath(cx: number, cy: number, rOuter: number, rInner: number, a0: number, a1: number) {
-  const [x0, y0] = pt(cx, cy, rOuter, a0);
-  const [x1, y1] = pt(cx, cy, rOuter, a1);
-  const [x2, y2] = pt(cx, cy, rInner, a1);
-  const [x3, y3] = pt(cx, cy, rInner, a0);
-  const large = a1 - a0 > 180 ? 1 : 0;
-  return `M ${x0} ${y0} A ${rOuter} ${rOuter} 0 ${large} 1 ${x1} ${y1} L ${x2} ${y2} A ${rInner} ${rInner} 0 ${large} 0 ${x3} ${y3} Z`;
 }
 
 export default function PvpPage({ onBack }: { onBack: () => void }) {
@@ -77,13 +58,9 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
   const [placing, setPlacing] = React.useState(false);
   const [betError, setBetError] = React.useState<string | null>(null);
   const [verifyModal, setVerifyModal] = React.useState<{ loading: boolean; data: RoundDetails | null; error?: string; round_id: number } | null>(null);
-  const [endedOverlay, setEndedOverlay] = React.useState<EndedRound | null>(null);
-  const [now, setNow] = React.useState(Date.now());
-  const [spinAngle, setSpinAngle] = React.useState(0);
-  const [stopOnTile, setStopOnTile] = React.useState<number | null>(null);
+  const [, setNow] = React.useState(Date.now());
   const [lastResolvedRound, setLastResolvedRound] = React.useState<EndedRound | null>(null);
   const [cooldownSeconds, setCooldownSeconds] = React.useState<number>(0);
-  const [spinInKey, setSpinInKey] = React.useState<number>(0);
   const [toast, setToast] = React.useState<string | null>(null);
   const [animationWinner, setAnimationWinner] = React.useState<EndedRound | null>(null);
 
