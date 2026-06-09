@@ -90,20 +90,40 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
     return () => clearInterval(id);
   }, []);
 
-  // poll status every 2s
+  // poll status every 1s (fast enough to catch short cooldown window)
+  const lastPollStatusRef = React.useRef<string | null>(null);
+  const lastPollRoundRef = React.useRef<number | null>(null);
   const loadStatus = React.useCallback(async () => {
     try {
       const r = await fetch(STATUS_URL, { cache: "no-store" });
       if (!r.ok) { console.error("[BetsOnBlock] status http", r.status); return; }
       const j = await r.json();
-      console.log("[BetsOnBlock] status:", j);
+      console.log("[Poll]", j.status, "round:", j.round_id, "time_left:", j.time_left_ms);
+
+      const prevStatus = lastPollStatusRef.current;
+      const prevRound = lastPollRoundRef.current;
+
+      // TRIGGER 1: entering cooldown
+      const enteringCooldown = j.status === "cooldown" && prevStatus !== "cooldown";
+      // TRIGGER 2: round_id changed (round just ended)
+      const roundChanged = prevRound != null && j.round_id != null && prevRound !== j.round_id;
+
+      if (enteringCooldown || roundChanged) {
+        console.log("[Poll] round ended — fetching history for winner", { enteringCooldown, roundChanged, prevRound, newRound: j.round_id });
+        loadHistory();
+      }
+
+      lastPollStatusRef.current = j.status;
+      if (j.round_id != null) lastPollRoundRef.current = j.round_id;
+
       setStatus(j);
       setStatusFetchedAt(Date.now());
     } catch (e) { console.error("[BetsOnBlock] status fetch error:", e); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   React.useEffect(() => {
     loadStatus();
-    const id = setInterval(loadStatus, 2000);
+    const id = setInterval(loadStatus, 1000);
     return () => clearInterval(id);
   }, [loadStatus]);
 
