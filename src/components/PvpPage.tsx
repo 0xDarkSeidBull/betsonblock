@@ -95,11 +95,22 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
   const activeRoundRef = React.useRef<number | null>(null);
   const historyRetryTimerRef = React.useRef<number | null>(null);
   const zeroHoldTimerRef = React.useRef<number | null>(null);
+  const visibleRoundEndsAtRef = React.useRef<number>(0);
 
   // tick for countdown
   React.useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
+  }, []);
+
+  React.useEffect(() => {
+    const unlockAudio = () => sounds.unlock();
+    window.addEventListener("pointerdown", unlockAudio, { passive: true });
+    window.addEventListener("keydown", unlockAudio);
+    return () => {
+      window.removeEventListener("pointerdown", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
+    };
   }, []);
 
   // poll status every 1s (fast enough to catch short cooldown window)
@@ -136,7 +147,9 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
     }, 650);
   }, []);
   const runAfterVisibleZero = React.useCallback((apiTimeLeftMs: unknown, fn: () => void) => {
-    const msLeft = Math.max(0, Number(apiTimeLeftMs) || 0);
+    const visibleMsLeft = Math.max(0, visibleRoundEndsAtRef.current - Date.now());
+    const apiMsLeft = Math.max(0, Number(apiTimeLeftMs) || 0);
+    const msLeft = Math.max(visibleMsLeft, apiMsLeft);
     if (msLeft <= 0) {
       fn();
       return;
@@ -160,6 +173,10 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
       if (!r.ok) { console.error("[BetsOnBlock] status http", r.status); return; }
       const j = await r.json();
       const apiRoundId = numOrNull(j.round_id ?? j.id ?? j.roundId);
+      const apiTimeLeftMs = Math.max(0, Number(j.time_left_ms) || 0);
+      if (j.status === "open" && apiTimeLeftMs > 0) {
+        visibleRoundEndsAtRef.current = Date.now() + apiTimeLeftMs;
+      }
       console.log("[Poll]", j.status, "round:", apiRoundId ?? j.round_id, "time_left:", j.time_left_ms);
 
       const statusWinnerTile = validWinningTile(j.winning_tile ?? j.result?.winning_tile);
@@ -203,7 +220,7 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
       setStatus({
         ...j,
         round_id: apiRoundId ?? ((j.status === "locked" || j.status === "cooldown" || j.status === "starting") ? prevRound : null),
-        time_left_ms: Number.isFinite(Number(j.time_left_ms)) ? Number(j.time_left_ms) : 0,
+        time_left_ms: apiTimeLeftMs,
         total_pool: Number.isFinite(Number(j.total_pool)) ? Number(j.total_pool) : 0,
       });
       setStatusFetchedAt(Date.now());
