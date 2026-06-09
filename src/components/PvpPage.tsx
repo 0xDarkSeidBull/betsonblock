@@ -209,19 +209,11 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
     return () => clearInterval(id);
   }, [loadMyBets]);
 
-  // detect round change → show resolve modal w/ last winner
+  // keep a stable previous round marker for UI fallbacks
   React.useEffect(() => {
-    if (!status) return;
-    if (prevRoundRef.current == null) { prevRoundRef.current = status.round_id; return; }
-    if (prevRoundRef.current !== status.round_id) {
-      const last = history[0];
-      if (last && last.round_id === prevRoundRef.current) {
-        triggerSpinTo(last.winning_tile, last);
-        setLastResolvedRound(last);
-      }
-      prevRoundRef.current = status.round_id;
-    }
-  }, [status, history]);
+    if (!status?.round_id) return;
+    prevRoundRef.current = status.round_id;
+  }, [status?.round_id]);
 
   // cooldown countdown + status transitions
   React.useEffect(() => {
@@ -230,7 +222,7 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
     if (status.status === "cooldown") {
       const ms = status.cooldown_ms ?? (status.next_round_at ? status.next_round_at - Date.now() : 0);
       setCooldownSeconds(Math.max(0, Math.ceil(ms / 1000)));
-      if (prev !== "cooldown") loadHistory();
+      if (prev !== "cooldown") loadHistory(status.round_id ?? prevRoundRef.current);
     } else if (prev === "cooldown" && status.status === "open") {
       setCooldownSeconds(0);
       setSpinInKey((k) => k + 1);
@@ -249,38 +241,6 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
     return () => clearInterval(id);
   }, [status?.status, status?.round_id]);
 
-  // wheel slow spin while open
-  React.useEffect(() => {
-    if (stopOnTile != null) return;
-    if (status?.status !== "open") return;
-    let raf = 0;
-    let last = performance.now();
-    const loop = (t: number) => {
-      const dt = t - last; last = t;
-      setSpinAngle((a) => (a + dt * 0.02) % 360); // slow drift
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, [status?.status, stopOnTile]);
-
-  function triggerSpinTo(tile: number, ended: EndedRound) {
-    // spin a few rotations then land
-    const segDeg = 360 / TILES;
-    // center of tile i is at angle (i-1)*segDeg + segDeg/2 from top
-    const target = -(((tile - 1) * segDeg) + segDeg / 2) + 360 * 6;
-    setStopOnTile(tile);
-    setSpinAngle(target);
-    setTimeout(() => {
-      setEndedOverlay(ended);
-    }, 3200);
-    setTimeout(() => {
-      setStopOnTile(null);
-      setEndedOverlay(null);
-      setSpinAngle(0);
-    }, 7200);
-  }
-
   async function openVerify(round_id: number) {
     setVerifyModal({ loading: true, data: null, round_id });
     try {
@@ -295,7 +255,7 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
 
   // derived
   const timeLeftMs = status
-    ? Math.max(0, status.time_left_ms - (Date.now() - statusFetchedAt))
+    ? Math.max(0, (status.time_left_ms ?? 0) - (Date.now() - statusFetchedAt))
     : 0;
   const isLocked = status?.status === "locked";
   const isOpen = status?.status === "open";
@@ -359,8 +319,9 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
   // approximate total round window for progress bar — use whatever we last saw
   const totalRoundMsRef = React.useRef<number>(60000);
   React.useEffect(() => {
-    if (status?.status === "open" && status.time_left_ms > totalRoundMsRef.current) {
-      totalRoundMsRef.current = status.time_left_ms;
+    const apiTimeLeft = status?.time_left_ms ?? 0;
+    if (status?.status === "open" && apiTimeLeft > totalRoundMsRef.current) {
+      totalRoundMsRef.current = apiTimeLeft;
     }
   }, [status]);
   const cooldownMsLeft = isCooldown
