@@ -500,7 +500,7 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <div className="side-head" style={{ fontSize: 13, marginBottom: 0 }}>
                   <Shield size={14} style={{ verticalAlign: "middle", marginRight: 6, color: "#7c5cff" }} />
-                  Drand · <span style={{ color: "#7c5cff" }}>Target</span> · #{status?.drand_target_round ?? "—"}
+                  Drand · <span style={{ color: "#7c5cff" }}>Target</span> · #{status?.drand_target_round ?? "—"} · Round <span style={{ color: "#0f172a" }}>#{status?.round_id ?? "—"}</span>
                 </div>
               </div>
               {status?.drand_verify_url && (
@@ -574,12 +574,13 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
                   {history.map((r) => (
                     <div key={r.round_id}
                       style={{
-                        background: "var(--bg-2)", border: "1px solid var(--line)",
+                        background: "#ffffff", border: "1.5px solid #0f172a",
                         borderRadius: 11, padding: "10px 12px",
+                        boxShadow: "2px 2px 0 0 rgba(15,23,42,.85)",
                         display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
                       }}>
-                      <span className="mono" style={{ color: "#22d3ee", fontWeight: 700, fontSize: 13 }}>
-                        #{r.round_id} · Tile {r.winning_tile}
+                      <span className="mono" style={{ color: "#0f172a", fontWeight: 800, fontSize: 13 }}>
+                        #{r.round_id} · Tile <span style={{ color: "#7c5cff" }}>{r.winning_tile}</span>
                       </span>
                       <button className="verify-btn" onClick={() => openVerify(r.round_id)}>Verify</button>
                     </div>
