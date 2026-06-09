@@ -549,14 +549,8 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
             </div>
             {status?.drand_verify_url && (
               <a href={status.drand_verify_url} target="_blank" rel="noreferrer"
-                style={{
-                  display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
-                  width: "100%", marginTop: 2,
-                  background: "#7c5cff", color: "#fff", textDecoration: "none",
-                  border: 0, borderRadius: 10,
-                  padding: "12px", fontSize: 12, fontWeight: 900,
-                  letterSpacing: ".14em", textTransform: "uppercase",
-                }}>
+                className="verify-btn"
+                style={{ width: "100%", gap: 6, marginTop: 2, textDecoration: "none" }}>
                 Verify on Drand <ExternalLink size={12} />
               </a>
             )}
