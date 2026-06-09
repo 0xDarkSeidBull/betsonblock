@@ -225,11 +225,11 @@ export default function PvpWheelVisual({
       setDimOthers(true);
       setShake(true);
       play(() => sounds.jackpot());
-      const youWon = myTiles.has(winningTile);
+      const youWon = (myPayout ?? 0) > 0;
       setCenter({
-        line1: `🏆 TILE ${winningTile} WINS`,
+        line1: `🏆 TILE ${winningTile} WINS!`,
         line2: `Pool: ${pot.toFixed(3)} zkLTC`,
-        line3: youWon ? `YOU WON! +${(myPayout ?? pot).toFixed(3)} zkLTC` : "",
+        line3: youWon ? `YOU WON! +${(myPayout ?? 0).toFixed(3)} zkLTC` : "Better luck next time!",
       });
       setTimeout(() => setShake(false), 600);
       // Hold the winner on screen — parent already shows "NEXT IN Xs"

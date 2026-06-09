@@ -62,6 +62,7 @@ type Status = {
 };
 
 type MyBet = { round_id: number; tile: number; amount: number };
+type Payout = { wallet?: string; bet?: number; payout?: number };
 type EndedRound = {
   round_id: number;
   winning_tile: number;
@@ -69,6 +70,7 @@ type EndedRound = {
   status?: string;
   drand_verify_url?: string;
   drand_round?: number | string;
+  payouts?: Payout[];
 };
 
 type RoundDetails = {
@@ -104,6 +106,7 @@ function normalizeEndedRound(raw: any): EndedRound | null {
     status,
     drand_verify_url: raw?.drand_verify_url,
     drand_round: raw?.drand_target_round ?? raw?.drand_round,
+    payouts: Array.isArray(raw?.payouts) ? raw.payouts as Payout[] : [],
   };
 }
 
@@ -617,6 +620,13 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
                 winningTile={animationWinner?.winning_tile ?? null}
                 animationRoundId={animationWinner?.round_id ?? null}
                 myTiles={myTilesThisRound}
+                myPayout={(() => {
+                  if (!addr || !animationWinner?.payouts) return null;
+                  const p = animationWinner.payouts.find(
+                    (x) => x.wallet?.toLowerCase() === addr
+                  );
+                  return p?.payout != null ? Number(p.payout) : 0;
+                })()}
                 selectedTiles={selectedTiles}
                 onTileClick={onSegmentClick}
                 onAnimationComplete={() => {
