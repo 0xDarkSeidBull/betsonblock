@@ -79,8 +79,29 @@ export default function PvpWheelVisual({
   const lastTickSecRef = React.useRef<number>(-1);
   const winningTileRef = React.useRef<number | null>(null);
   const animationRunningRef = React.useRef<boolean>(false);
+  const isBonanzaRef = React.useRef<boolean>(false);
+  const [bonanzaActive, setBonanzaActive] = React.useState(false);
+  const [bonanzaOverlay, setBonanzaOverlay] = React.useState(false);
+  const [goldFlash, setGoldFlash] = React.useState(false);
 
   const play = React.useCallback((fn: () => void) => { if (soundOn) fn(); }, [soundOn]);
+
+  const playBonanza = React.useCallback(() => {
+    if (!soundOn) return;
+    try {
+      const a = new (window.AudioContext || (window as any).webkitAudioContext)();
+      [400,500,600,800,1000,1200].forEach((f, i) => {
+        const o = a.createOscillator(), g = a.createGain();
+        o.connect(g); g.connect(a.destination);
+        o.frequency.value = f;
+        g.gain.setValueAtTime(0.12, a.currentTime + i * 0.12);
+        g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + i * 0.12 + 0.25);
+        o.start(a.currentTime + i * 0.12);
+        o.stop(a.currentTime + i * 0.12 + 0.25);
+      });
+    } catch (e) { /* ignore */ }
+  }, [soundOn]);
+
 
   // ---- countdown tick during open ----
   const secsLeft = Math.max(0, Math.ceil(timeLeftMs / 1000));
