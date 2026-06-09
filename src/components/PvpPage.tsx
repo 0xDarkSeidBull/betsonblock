@@ -359,14 +359,14 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
     setSelectedTilesState(s);
   }, []);
 
+  const setSelectedTiles = updateSelection;
+
   const onSegmentClick = (tile: number) => {
     if (!addr) { openConnectModal?.(); return; }
     if (isLocked || isCooldown) return;
-    setSelectedTilesState((prev) => {
-      const next = new Set(prev);
-      if (next.has(tile)) next.delete(tile); else next.add(tile);
-      return next;
-    });
+    const next = new Set(selectedTilesRef.current);
+    if (next.has(tile)) next.delete(tile); else next.add(tile);
+    updateSelection(next);
   };
 
   const placeBetsForTiles = React.useCallback(async (tiles: number[], amt: number) => {
