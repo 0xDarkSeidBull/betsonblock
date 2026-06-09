@@ -597,7 +597,6 @@ export default function PvpPage({ onBack }: { onBack: () => void }) {
           </div>
         </div>
       </div>
-      </div>
 
 
 
