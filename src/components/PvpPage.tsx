@@ -65,6 +65,7 @@ type MyBet = { round_id: number; tile: number; amount: number };
 type EndedRound = {
   round_id: number;
   winning_tile: number;
+  total_pool?: number;
   status?: string;
   drand_verify_url?: string;
   drand_round?: number | string;
