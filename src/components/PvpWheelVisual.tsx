@@ -87,49 +87,57 @@ export default function PvpWheelVisual({
     else if (isCooldown) setCenter({ line1: "RESOLVING", timer: true });
   }, [isOpen, isLocked, isCooldown, animating]);
 
-  // ---- trigger animation when cooldown starts and we know the winning tile ----
+  // ---- trigger animation as soon as parent finds resolved winner ----
   React.useEffect(() => {
-    if (!isCooldown || winningTile == null || roundId == null) return;
-    if (animRanForRoundRef.current === roundId) return;
-    animRanForRoundRef.current = roundId;
+    const animationKey = animationRoundId ?? (isCooldown ? roundId : null);
+    if (winningTile == null || animationKey == null) return;
+    if (animRanForRoundRef.current === animationKey) return;
+    animRanForRoundRef.current = animationKey;
     let cancelled = false;
 
     const run = async () => {
       setAnimating(true);
+      setPhase("resolve");
       setWinnerTile(null);
       setDimOthers(false);
       setShake(false);
+      setCenter({ line1: `ROUND #${animationKey}`, line2: "00:00", line3: "RESOLVING" });
 
-      // PHASE A — sequential highlight 1..30 (1.5s)
-      for (let i = 1; i <= 30; i++) {
+      // PHASE A — gold chase while the round ends
+      for (let step = 0; step < 42; step++) {
         if (cancelled) return;
-        setHighlighted(i);
-        play(() => sounds.tick(200 + i * 15));
-        await sleep(50);
-      }
-      await sleep(200);
-
-      // PHASE B — blink x3 (0.9s)
-      for (let b = 0; b < 3; b++) {
-        if (cancelled) return;
-        setAllBlink(true); await sleep(150);
-        setAllBlink(false); await sleep(150);
+        setHighlighted((step % TILE_COUNT) + 1);
+        play(() => sounds.tick(260 + (step % 8) * 45));
+        await sleep(Math.max(26, 72 - step));
       }
 
-      // PHASE C — fast rotation 3 loops (1.5s)
+      if (cancelled) return;
+      setPhase("scatter");
+      setHighlighted(null);
+      setCenter({ line1: "", line2: "", line3: "" });
+      await sleep(850);
+
+      if (cancelled) return;
+      setPhase("logo");
+      await sleep(950);
+
+      if (cancelled) return;
+      setPhase("sweep");
+      setCenter({ line1: `ROUND #${animationKey}`, line2: "- - -", line3: "STARTS IN A FEW SEC" });
+
+      // PHASE C — ring rebuild + fast sweep
       let current = 1;
-      for (let t = 0; t < 90; t++) {
+      for (let t = 0; t < 75; t++) {
         if (cancelled) return;
         setHighlighted(current);
         if (t % 2 === 0) play(() => sounds.tick(600));
-        await sleep(17);
+        await sleep(20);
         current = (current % 30) + 1;
       }
 
       // PHASE D — slowdown to winning tile
-      const speeds = [17, 17, 25, 35, 50, 70, 100, 150, 200, 280, 350, 420];
+      const speeds = [24, 30, 38, 50, 68, 92, 125, 165, 215, 280, 360, 460];
       let speedIdx = 0;
-      // step until we reach winningTile after at least one full extra loop has begun
       let safety = 0;
       while (safety++ < 200) {
         if (cancelled) return;
@@ -144,6 +152,7 @@ export default function PvpWheelVisual({
 
       // PHASE E — land on winner
       if (cancelled) return;
+      setPhase("winner");
       setWinnerTile(winningTile);
       setHighlighted(null);
       setDimOthers(true);
@@ -151,15 +160,18 @@ export default function PvpWheelVisual({
       play(() => sounds.winner());
       const youWon = myTiles.has(winningTile);
       setCenter({
-        line1: `🏆 TILE ${winningTile} WINS!`,
+        line1: `TILE ${winningTile} WINS`,
         line2: `Pool: ${pot.toFixed(3)} zkLTC`,
         line3: youWon ? `YOU WON! +${(myPayout ?? pot).toFixed(3)} zkLTC` : "",
       });
       setTimeout(() => setShake(false), 600);
-      await sleep(3000);
+      await sleep(2600);
 
-      // PHASE F — countdown 5..1
-      for (let c = 5; c >= 1; c--) {
+      // PHASE F — new round loader
+      setPhase("new-round");
+      setDimOthers(false);
+      setWinnerTile(null);
+      for (let c = 3; c >= 1; c--) {
         if (cancelled) return;
         setCenter({ line1: "NEW ROUND IN", line2: String(c), countdown: true });
         play(() => sounds.tick(400 + (6 - c) * 40));
@@ -174,14 +186,16 @@ export default function PvpWheelVisual({
       setHighlighted(null);
       setWinnerTile(null);
       setDimOthers(false);
+      setPhase("idle");
       setCenter({ line1: "ROUND OPEN", timer: true });
       setAnimating(false);
+      onAnimationComplete?.();
     };
 
     run();
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCooldown, winningTile, roundId]);
+  }, [animationRoundId, winningTile]);
 
   // ---- tooltip hover delay ----
   const onTileEnter = (tile: number) => {
