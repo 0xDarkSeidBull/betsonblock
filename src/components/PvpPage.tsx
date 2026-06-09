@@ -824,10 +824,22 @@ function EndedRoundsPanel({ history, onVerify }: { history: EndedRound[]; onVeri
                   boxShadow: "2px 2px 0 0 rgba(15,23,42,.85)",
                   display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
                 }}>
-                <span className="mono" style={{ color: "#0f172a", fontWeight: 800, fontSize: 13 }}>
+                <span className="mono" style={{ color: "#0f172a", fontWeight: 800, fontSize: 13, display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                   #{r.round_id} · Tile <span style={{ color: "#7c5cff" }}>{r.winning_tile}</span>
+                  {r.is_bonanza === 1 && (
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: 3,
+                      background: "linear-gradient(90deg,#fbbf24,#f59e0b)",
+                      color: "#7c2d12", fontWeight: 900, fontSize: 10,
+                      padding: "2px 7px", borderRadius: 999,
+                      border: "1.5px solid #b45309",
+                      letterSpacing: ".06em", textTransform: "uppercase",
+                      boxShadow: "0 0 8px rgba(253,224,71,.65)",
+                    }}>🎉 BONANZA</span>
+                  )}
                 </span>
                 <button className="verify-btn" onClick={() => onVerify(r.round_id)}>Verify</button>
+
               </div>
             ))}
           </div>
