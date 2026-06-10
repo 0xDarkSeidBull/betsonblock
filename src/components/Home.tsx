@@ -2,7 +2,7 @@ import React from "react";
 import { Zap, Shield, Clock, Dice5, ArrowRight, Blocks } from "lucide-react";
 import DemoWidget from "./DemoWidget";
 
-export default function Home({ onEnter }: { onEnter: () => void }) {
+export default function Home({ onEnter, onPvp }: { onEnter: () => void; onPvp?: () => void }) {
   return (
     <div className="home">
       {/* hero */}
