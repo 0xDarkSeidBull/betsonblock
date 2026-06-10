@@ -194,7 +194,7 @@ export default function App() {
               <button className="btn btn-primary btn-sm" onClick={() => goView("zone")}>Enter Zone</button>
             </div>
           </div>
-          <Home onEnter={() => goView("zone")} />
+          <Home onEnter={() => goView("zone")} onPvp={() => goView("pvp")} />
         </div>
         {pfBlock != null && <ProvablyFair block={pfBlock} onClose={() => setPfBlock(null)} />}
       </>
