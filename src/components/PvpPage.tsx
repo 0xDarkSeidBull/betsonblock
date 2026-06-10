@@ -296,6 +296,7 @@ export default function PvpPage({ onBack, onAbout }: { onBack: () => void; onAbo
 
   // poll history every 10s
   const loadHistory = React.useCallback(async (targetRoundId?: number | null) => {
+    setHistoryLoading(true);
     try {
       const r = await fetch(HISTORY_URL, { cache: "no-store" });
       if (!r.ok) { console.error("[BetsOnBlock] history http", r.status); return; }
@@ -322,6 +323,7 @@ export default function PvpPage({ onBack, onAbout }: { onBack: () => void; onAbo
         scheduleWinnerRetry(wantedRound);
       }
     } catch (e) { console.error("[BetsOnBlock] history fetch error:", e); }
+    finally { setHistoryLoading(false); }
   }, [runAfterVisibleZero, scheduleWinnerRetry, startAnimationForWinner]);
   React.useEffect(() => { loadHistoryRef.current = loadHistory; }, [loadHistory]);
   React.useEffect(() => () => {
