@@ -582,8 +582,8 @@ export default function PvpPage({ onBack, onAbout }: { onBack: () => void; onAbo
           <img src="https://raw.githubusercontent.com/dopedopex/your-friendly-helper/main/logo.png" alt="" width={36} height={36} style={{ borderRadius: 10, objectFit: "cover" }} />
           <div><h1>Bets<b>On</b>Block</h1></div>
         </div>
-        <div style={{ flex: 1, display: "flex", justifyContent: "center", padding: "0 16px" }}>
-          <div style={{
+        <div className="pvp-topbar-mid" style={{ flex: 1, display: "flex", justifyContent: "center", padding: "0 16px" }}>
+          <div className="pvp-drand-bar" style={{
             background: "#ffffff", border: "2px solid #0f172a",
             borderRadius: 12, padding: "8px 14px", boxShadow: "3px 3px 0 0 rgba(15,23,42,.9)", color: "#0f172a",
             display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14,
@@ -602,7 +602,7 @@ export default function PvpPage({ onBack, onAbout }: { onBack: () => void; onAbo
             )}
           </div>
         </div>
-        <div style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 10 }}>
+        <div className="pvp-topbar-right" style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 10 }}>
           <AboutModal onOpen={onAbout} />
           <MyBetsModal address={addr} refreshKey={myBetsRefresh} />
           <span className="live-head" style={{ display: "inline-flex", alignItems: "center" }}><span className="pulse" /> PVP <b className="mono" style={{ marginLeft: 4 }}>#{status?.round_id ?? "…"}</b></span>
