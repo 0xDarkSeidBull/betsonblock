@@ -2,7 +2,7 @@ import React from "react";
 import { Zap, Shield, Clock, Dice5, ArrowRight, Blocks } from "lucide-react";
 import DemoWidget from "./DemoWidget";
 
-export default function Home({ onEnter }: { onEnter: () => void }) {
+export default function Home({ onEnter, onPvp }: { onEnter: () => void; onPvp?: () => void }) {
   return (
     <div className="home">
       {/* hero */}
@@ -17,9 +17,16 @@ export default function Home({ onEnter }: { onEnter: () => void }) {
           Every outcome is decided by a future LiteForge block, its hash, its transactions, its gas.
           Nobody can predict it. Nobody can fake it. You can verify every single result on-chain.
         </p>
-        <button className="enter-btn" onClick={onEnter}>
-          Enter Betting Zone <ArrowRight size={18} />
-        </button>
+        <div className="enter-btn-row">
+          <button className="enter-btn" onClick={onEnter}>
+            Enter Betting Zone <ArrowRight size={18} />
+          </button>
+          {onPvp && (
+            <button className="enter-btn" onClick={onPvp}>
+              Enter PVP Zone <ArrowRight size={18} />
+            </button>
+          )}
+        </div>
         <div className="hero-stats">
           <div><b>0.01</b><span>zkLTC per bet</span></div>
           <div><b>~0.2s</b><span>block time</span></div>

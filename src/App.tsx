@@ -188,14 +188,13 @@ export default function App() {
             </div>
             <div style={{ flex: 1, display: "flex", justifyContent: "center", gap: 10 }}>
               <HeaderStats />
-              <PvpButton onClick={() => goView("pvp")} />
             </div>
             <div className="top-right">
               <div className="live-head"><span className="pulse" /> Block <b className="mono" style={{ marginLeft: 4 }}>#{head?.toLocaleString() ?? "…"}</b></div>
               <button className="btn btn-primary btn-sm" onClick={() => goView("zone")}>Enter Zone</button>
             </div>
           </div>
-          <Home onEnter={() => goView("zone")} />
+          <Home onEnter={() => goView("zone")} onPvp={() => goView("pvp")} />
         </div>
         {pfBlock != null && <ProvablyFair block={pfBlock} onClose={() => setPfBlock(null)} />}
       </>
