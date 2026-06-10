@@ -547,8 +547,20 @@ export default function PvpPage({ onBack, onAbout }: { onBack: () => void; onAbo
 
 
 
-  // wheel geometry
-  const SIZE = 560;
+  // wheel geometry (responsive: shrinks on mobile)
+  const [SIZE, setSIZE] = React.useState<number>(() => {
+    if (typeof window === "undefined") return 560;
+    const w = window.innerWidth;
+    return w < 768 ? Math.min(Math.max(w - 48, 280), 400) : 560;
+  });
+  React.useEffect(() => {
+    const calc = () => {
+      const w = window.innerWidth;
+      setSIZE(w < 768 ? Math.min(Math.max(w - 48, 280), 400) : 560);
+    };
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, []);
 
   // approximate total round window for progress bar — use whatever we last saw
   const totalRoundMsRef = React.useRef<number>(60000);
@@ -570,8 +582,8 @@ export default function PvpPage({ onBack, onAbout }: { onBack: () => void; onAbo
           <img src="https://raw.githubusercontent.com/dopedopex/your-friendly-helper/main/logo.png" alt="" width={36} height={36} style={{ borderRadius: 10, objectFit: "cover" }} />
           <div><h1>Bets<b>On</b>Block</h1></div>
         </div>
-        <div style={{ flex: 1, display: "flex", justifyContent: "center", padding: "0 16px" }}>
-          <div style={{
+        <div className="pvp-topbar-mid" style={{ flex: 1, display: "flex", justifyContent: "center", padding: "0 16px" }}>
+          <div className="pvp-drand-bar" style={{
             background: "#ffffff", border: "2px solid #0f172a",
             borderRadius: 12, padding: "8px 14px", boxShadow: "3px 3px 0 0 rgba(15,23,42,.9)", color: "#0f172a",
             display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14,
@@ -590,7 +602,7 @@ export default function PvpPage({ onBack, onAbout }: { onBack: () => void; onAbo
             )}
           </div>
         </div>
-        <div style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 10 }}>
+        <div className="pvp-topbar-right" style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 10 }}>
           <AboutModal onOpen={onAbout} />
           <MyBetsModal address={addr} refreshKey={myBetsRefresh} />
           <span className="live-head" style={{ display: "inline-flex", alignItems: "center" }}><span className="pulse" /> PVP <b className="mono" style={{ marginLeft: 4 }}>#{status?.round_id ?? "…"}</b></span>
@@ -605,7 +617,7 @@ export default function PvpPage({ onBack, onAbout }: { onBack: () => void; onAbo
 
 
 
-        <div style={{ display: "grid", gridTemplateColumns: "320px 1fr 320px", gap: 22, alignItems: "start" }}>
+        <div className="pvp-3col" style={{ display: "grid", gridTemplateColumns: "320px 1fr 320px", gap: 22, alignItems: "start" }}>
           {/* BET PANEL */}
           <BetPanel
             roundId={status?.round_id ?? null}
@@ -627,9 +639,9 @@ export default function PvpPage({ onBack, onAbout }: { onBack: () => void; onAbo
           />
 
           {/* WHEEL COLUMN */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div className="pvp-wheel-col" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {/* WHEEL */}
-            <div style={{
+            <div className="pvp-wheel-card" style={{
               background: "radial-gradient(ellipse at center, #ffffff 0%, #f1f3f7 75%)",
               border: "2px solid #0f172a", borderRadius: 22,
               boxShadow: "4px 4px 0 0 rgba(15,23,42,.9)",
