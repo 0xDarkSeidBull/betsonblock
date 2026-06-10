@@ -207,7 +207,7 @@ Multiplier = payout / yourBet
             <ResultCard label="Multiplier" value={`${mult.toFixed(2)} ×`} color="#9333ea" />
             <ResultCard
               label="Net P&L"
-              value={`${pnl >= 0 ? "+" : "−"}${Math.abs(pnl).toFixed(3)} zkLTC`}
+              value={`${pnl >= 0 ? "+" : "-"}${Math.abs(pnl).toFixed(3)} zkLTC`}
               color={pnl >= 0 ? GREEN : RED}
             />
           </div>
