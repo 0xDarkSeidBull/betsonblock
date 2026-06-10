@@ -829,7 +829,7 @@ function EndedRoundsPanel({ history, loading, onVerify }: { history: EndedRound[
         }}>{history.length} Total</span>
       </div>
       <div style={{ borderTop: "1px solid rgba(15,23,42,.10)", paddingTop: 10, minHeight: 480 }}>
-        {loading ? (
+        {loading && history.length === 0 ? (
           <div style={{ fontSize: 13, color: "#64748b", display: "flex", alignItems: "center", gap: 10, padding: "24px 0" }}>
             <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#7c5cff", display: "inline-block", animation: "pulse 1.4s cubic-bezier(0.4,0,0.6,1) infinite" }} />
             Loading rounds…
