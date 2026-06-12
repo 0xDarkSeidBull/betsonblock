@@ -400,7 +400,7 @@ export default function MysteryBox({
                 }}>
                   <span>{state.betsProgress}</span>
                   <span style={{ opacity: .6 }}>/</span>
-                  <span>{BETS_NEEDED}</span>
+                  <span>{state.betsNeeded}</span>
                   <span style={{ fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", marginLeft: 4 }}>bets</span>
                 </div>
 
