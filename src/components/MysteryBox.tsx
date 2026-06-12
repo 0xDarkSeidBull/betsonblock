@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import boxAsset from "@/assets/mystery-box.png.asset.json";
 
 type Rarity = "common" | "rare" | "epic" | "legendary";
@@ -179,11 +180,11 @@ export default function MysteryBox({
         )}
       </button>
 
-      {open && (
+      {open && createPortal((
         <div
           onClick={closeModal}
           style={{
-            position: "fixed", inset: 0, zIndex: 50,
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999,
             background: "rgba(0,0,0,.75)",
             display: "flex", alignItems: "center", justifyContent: "center",
             padding: 20,
@@ -353,7 +354,7 @@ export default function MysteryBox({
             )}
           </div>
         </div>
-      )}
+      ), document.body)}
     </>
   );
 }
