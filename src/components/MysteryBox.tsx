@@ -330,7 +330,7 @@ export default function MysteryBox({
                 userSelect: "none",
               }}
             >
-              {stage !== "reveal" && (
+            {stage !== "reveal" && !maxed && (
                 <img
                   src={boxImg}
                   alt="Mystery Box"
