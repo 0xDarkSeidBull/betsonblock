@@ -321,32 +321,7 @@ More tiles  = low variance (steady small returns)`}</pre>
 
         {/* SECTION 8 */}
         <div style={sectionWrap}>
-          <h3 style={sectionTitle}>8 Mystery Box</h3>
-          <div className="about-grid-3">
-            <ResultCard label="Unlock rule" value="10 bets = 1 box" color={BLUE} />
-            <ResultCard label="Daily limit" value="3 boxes" color={GOLD} />
-            <ResultCard label="Reset" value="Every day" color={GREEN} />
-          </div>
-          <div style={{ fontSize: 13, color: MUTED, marginTop: 12, lineHeight: 1.7 }}>
-            Mystery Box rewards active players with bonus LitDEX Points. Place 10 bets to unlock one box, tap the box to claim, and repeat until the daily limit is reached. Claim status is tracked by wallet, so your progress follows the connected address.
-          </div>
-          <div className="about-grid-4" style={{ marginTop: 12 }}>
-            <PhaseCard n={1} label="COMMON" desc="Small bonus reward: 5–20 points" color="#CD853F" />
-            <PhaseCard n={2} label="RARE" desc="Better box reward: 25–60 points" color="#0284c7" />
-            <PhaseCard n={3} label="EPIC" desc="High-value reward: 75–150 points" color="#9333ea" />
-            <PhaseCard n={4} label="LEGENDARY" desc="Top reward: 200–500 points" color={GOLD} />
-          </div>
-          <pre style={{ ...codeBlock, marginTop: 12 }}>{`Mystery Box flow:
-1. Connect wallet
-2. Place bets in live rounds
-3. Every 10 bets unlocks 1 claim
-4. Open up to 3 boxes per day
-5. Bonus points are added after the claim result`}</pre>
-        </div>
-
-        {/* SECTION 9 */}
-        <div style={sectionWrap}>
-          <h3 style={sectionTitle}>9 Bonanza Rounds</h3>
+          <h3 style={sectionTitle}>8 Bonanza Rounds</h3>
           <div className="about-grid-2">
             <div style={{ ...card }}>
               <div style={{ fontWeight: 900, fontSize: 14, marginBottom: 8, color: INK }}>Normal Round</div>
@@ -370,6 +345,35 @@ More tiles  = low variance (steady small returns)`}</pre>
           </div>
           <div style={{ fontSize: 13, color: MUTED, marginTop: 12, lineHeight: 1.6 }}>
             Bonanza designation is hidden until round resolves - you won't know in advance. Revealed with special animation after resolution. Bonanza rounds appear with 🎉 badge in round history.
+          </div>
+        </div>
+
+        {/* SECTION 9 */}
+        <div style={sectionWrap}>
+          <h3 style={sectionTitle}>9 Mystery Box</h3>
+          <div style={{ fontSize: 13, color: MUTED, marginBottom: 12, lineHeight: 1.7 }}>
+            Mystery Box is a daily reward system for active players.
+          </div>
+          <div style={{ ...card, marginBottom: 12 }}>
+            <div style={{ fontWeight: 900, fontSize: 13, marginBottom: 8, color: INK }}>How to earn</div>
+            <div style={{ fontSize: 12.5, lineHeight: 1.8, color: MUTED }}>
+              <div>• Play in competitive rounds (2+ wallets in the pool)</div>
+              <div>• Every 10 qualifying bets = 1 Mystery Box unlock</div>
+              <div>• Max 3 boxes per day</div>
+            </div>
+          </div>
+          <div style={{ fontWeight: 900, fontSize: 13, marginBottom: 8, color: INK }}>Rarity &amp; Rewards</div>
+          <div className="about-grid-4" style={{ marginBottom: 12 }}>
+            <ResultCard label="COMMON" value="59% | 100–500 pts" color="#CD853F" />
+            <ResultCard label="RARE" value="30% | 500–2,000 pts" color="#0284c7" />
+            <ResultCard label="EPIC" value="9% | 2,000–10,000 pts" color="#9333ea" />
+            <ResultCard label="LEGENDARY" value="1% | 50,000 pts" color={GOLD} />
+          </div>
+          <div style={{ fontSize: 12.5, color: MUTED, lineHeight: 1.7 }}>
+            Points are awarded directly to your LitDEX wallet on-chain.
+          </div>
+          <div style={{ fontSize: 12.5, color: MUTED, lineHeight: 1.7, marginTop: 6 }}>
+            Click the 🎁 MYSTERY BOX button in the header to track your progress and claim boxes.
           </div>
         </div>
       </div>
