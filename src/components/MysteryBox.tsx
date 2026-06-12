@@ -397,26 +397,30 @@ export default function MysteryBox({
             {/* BOTTOM: bets progress */}
             {stage !== "reveal" && (
               <>
-                <div style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  background: "#3b82f6", border: "2px solid #000", borderRadius: 8,
-                  padding: "6px 14px", fontWeight: 900, fontSize: 13,
-                  fontFamily: "ui-monospace,monospace", color: "#fff",
-                  boxShadow: "2px 2px 0 0 #000",
-                }}>
-                  <span>{state.betsProgress}</span>
-                  <span style={{ opacity: .6 }}>/</span>
-                  <span>{state.betsNeeded}</span>
-                  <span style={{ fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", marginLeft: 4 }}>bets</span>
-                </div>
+                {!maxed && (
+                  <>
+                    <div style={{
+                      display: "inline-flex", alignItems: "center", gap: 8,
+                      background: "#3b82f6", border: "2px solid #000", borderRadius: 8,
+                      padding: "6px 14px", fontWeight: 900, fontSize: 13,
+                      fontFamily: "ui-monospace,monospace", color: "#fff",
+                      boxShadow: "2px 2px 0 0 #000",
+                    }}>
+                      <span>{state.betsProgress}</span>
+                      <span style={{ opacity: .6 }}>/</span>
+                      <span>{state.betsNeeded}</span>
+                      <span style={{ fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", marginLeft: 4 }}>bets</span>
+                    </div>
 
-                <div style={{ width: "100%", height: 8, background: "#f1f5f9", borderRadius: 999, overflow: "hidden", border: "2px solid #000" }}>
-                  <div style={{
-                    width: `${pct}%`, height: "100%",
-                    background: canClaim ? "linear-gradient(90deg,#cc0000,#FFD700)" : "#94a3b8",
-                    transition: "width 240ms ease",
-                  }} />
-                </div>
+                    <div style={{ width: "100%", height: 8, background: "#f1f5f9", borderRadius: 999, overflow: "hidden", border: "2px solid #000" }}>
+                      <div style={{
+                        width: `${pct}%`, height: "100%",
+                        background: canClaim ? "linear-gradient(90deg,#cc0000,#FFD700)" : "#94a3b8",
+                        transition: "width 240ms ease",
+                      }} />
+                    </div>
+                  </>
+                )}
 
                 <div style={{
                   fontSize: 11, color: "#475569", fontWeight: 700,
