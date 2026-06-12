@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import boxAsset from "@/assets/mystery-box.png.asset.json";
 
 type Rarity = "common" | "rare" | "epic" | "legendary";
