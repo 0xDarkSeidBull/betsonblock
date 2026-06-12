@@ -84,7 +84,9 @@ export default function BetPanel({
   const canPlace = walletConnected && count > 0 && amt > 0 && !lockedUI && !placing;
   const placeBets = async () => {
     if (!canPlace) return;
-    await onPlaceBets(Array.from(selectedTiles), amt);
+    const tiles = Array.from(selectedTiles);
+    await onPlaceBets(tiles, amt);
+    setBetsPlacedCount((c) => c + tiles.length);
   };
 
   const startAuto = () => {
