@@ -1,11 +1,13 @@
 import React from "react";
 import { createPortal } from "react-dom";
-import boxImg from "@/assets/mystery-box-3d.png";
+import boxImg from "@/assets/mystery-box-3d-fast.webp";
 
-// Preload the box image once at module load so the modal opens instantly
+// Preload and decode the optimized box image once so the modal opens instantly.
 if (typeof window !== "undefined") {
   const img = new Image();
+  img.decoding = "async";
   img.src = boxImg;
+  img.decode?.().catch(() => undefined);
 }
 
 type Rarity = "common" | "rare" | "epic" | "legendary";
@@ -397,7 +399,7 @@ export default function MysteryBox({
             {/* BOTTOM: bets progress */}
             {stage !== "reveal" && (
               <>
-                {!maxed && (
+                {statusReady && !maxed && (
                   <>
                     <div style={{
                       display: "inline-flex", alignItems: "center", gap: 8,
@@ -429,9 +431,11 @@ export default function MysteryBox({
                   {!walletAddress
                     ? "Connect wallet to start collecting"
                     : maxed
-                    ? "All 3 boxes claimed — come back tomorrow"
+                    ? "All 3 boxes claimed. Come back tomorrow"
                     : canClaim
                     ? "Tap the box to open!"
+                    : !statusReady
+                    ? "Checking box status"
                     : `Place ${state.betsNeeded - state.betsProgress} more bet${state.betsNeeded - state.betsProgress === 1 ? "" : "s"} to unlock`}
                 </div>
               </>
