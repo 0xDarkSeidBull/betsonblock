@@ -19,26 +19,43 @@ function rollRarity(): Rarity {
   return "legendary";
 }
 
-const BETS_NEEDED = 10;
-const MAX_BOXES = 3;
+const DEFAULT_BETS_NEEDED = 10;
+const DEFAULT_MAX_BOXES = 3;
 
-function todayKey(wallet: string) {
-  const d = new Date();
-  const day = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-  return `mbx::${wallet.toLowerCase()}::${day}`;
-}
+const API_BASE =
+  (import.meta as any).env?.VITE_API_URL ||
+  "https://betsonblock-api.test-hub.xyz";
 
-type State = { betsProgress: number; todayBoxes: number; lastBetCount: number };
+type State = {
+  betsProgress: number;
+  todayBoxes: number;
+  betsNeeded: number;
+  maxBoxes: number;
+};
 
-function loadState(wallet: string): State {
-  try {
-    const raw = localStorage.getItem(todayKey(wallet));
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return { betsProgress: 0, todayBoxes: 0, lastBetCount: 0 };
-}
-function saveState(wallet: string, s: State) {
-  try { localStorage.setItem(todayKey(wallet), JSON.stringify(s)); } catch {}
+function normalizeStatus(j: any): State {
+  const num = (v: any, d = 0) => {
+    const n = typeof v === "string" ? Number(v) : v;
+    return Number.isFinite(n) ? Number(n) : d;
+  };
+  return {
+    betsProgress: num(
+      j?.betsProgress ?? j?.progress ?? j?.bets ?? j?.betsPlaced ?? j?.current,
+      0
+    ),
+    todayBoxes: num(
+      j?.todayBoxes ?? j?.claimsToday ?? j?.claimed ?? j?.boxesClaimed,
+      0
+    ),
+    betsNeeded: num(
+      j?.betsNeeded ?? j?.required ?? j?.threshold,
+      DEFAULT_BETS_NEEDED
+    ),
+    maxBoxes: num(
+      j?.maxBoxes ?? j?.maxClaims ?? j?.dailyLimit,
+      DEFAULT_MAX_BOXES
+    ),
+  };
 }
 
 export default function MysteryBox({
@@ -48,7 +65,12 @@ export default function MysteryBox({
   walletAddress: string | null;
   totalBetsPlaced: number;
 }) {
-  const [state, setState] = React.useState<State>({ betsProgress: 0, todayBoxes: 0, lastBetCount: 0 });
+  const [state, setState] = React.useState<State>({
+    betsProgress: 0,
+    todayBoxes: 0,
+    betsNeeded: DEFAULT_BETS_NEEDED,
+    maxBoxes: DEFAULT_MAX_BOXES,
+  });
   const [open, setOpen] = React.useState(false);
   const [stage, setStage] = React.useState<"idle" | "shake" | "burst" | "reveal">("idle");
   const [reward, setReward] = React.useState<{ rarity: Rarity; points: number } | null>(null);
@@ -67,43 +89,57 @@ export default function MysteryBox({
     if (Math.abs(dx) + Math.abs(dy) > 4) dragRef.current.moved = true;
     setRotZ(dragRef.current.rz + dx * 0.8);
   };
-  const onPointerUp = (e: React.PointerEvent) => {
+  const onPointerUp = (_e: React.PointerEvent) => {
     const moved = dragRef.current?.moved;
     dragRef.current = null;
     if (!moved && canClaimRef.current && stage === "idle") onBoxClick();
   };
   const canClaimRef = React.useRef(false);
 
-  React.useEffect(() => {
-    if (!walletAddress) {
-      setState({ betsProgress: 0, todayBoxes: 0, lastBetCount: 0 });
-      return;
-    }
-    const s = loadState(walletAddress);
-    setState({ ...s, lastBetCount: totalBetsPlaced });
-     
+  const fetchStatus = React.useCallback(async () => {
+    if (!walletAddress) return;
+    try {
+      const r = await fetch(
+        `${API_BASE}/mystery-box/status?wallet=${walletAddress.toLowerCase()}`,
+        { cache: "no-store" }
+      );
+      if (!r.ok) return;
+      const j = await r.json();
+      setState(normalizeStatus(j));
+    } catch { /* */ }
   }, [walletAddress]);
 
   React.useEffect(() => {
-    if (!walletAddress) return;
-    setState((prev) => {
-      const delta = Math.max(0, totalBetsPlaced - prev.lastBetCount);
-      if (delta === 0) return prev;
-      const nextProgress = Math.min(BETS_NEEDED, prev.betsProgress + delta);
-      const next = { ...prev, betsProgress: nextProgress, lastBetCount: totalBetsPlaced };
-      saveState(walletAddress, next);
-      return next;
-    });
-  }, [totalBetsPlaced, walletAddress]);
+    if (!walletAddress) {
+      setState({
+        betsProgress: 0, todayBoxes: 0,
+        betsNeeded: DEFAULT_BETS_NEEDED, maxBoxes: DEFAULT_MAX_BOXES,
+      });
+      return;
+    }
+    fetchStatus();
+    const id = window.setInterval(fetchStatus, 8000);
+    return () => window.clearInterval(id);
+  }, [walletAddress, fetchStatus]);
 
-  const canClaim = !!walletAddress && state.betsProgress >= BETS_NEEDED && state.todayBoxes < MAX_BOXES;
-  const maxed = state.todayBoxes >= MAX_BOXES;
+  // Re-poll status whenever the user places a new bet
+  React.useEffect(() => {
+    if (!walletAddress) return;
+    fetchStatus();
+  }, [totalBetsPlaced, walletAddress, fetchStatus]);
+
+  const canClaim =
+    !!walletAddress &&
+    state.betsProgress >= state.betsNeeded &&
+    state.todayBoxes < state.maxBoxes;
+  const maxed = state.todayBoxes >= state.maxBoxes;
   canClaimRef.current = canClaim;
 
   const openModal = () => {
     setStage("idle");
     setReward(null);
     setOpen(true);
+    fetchStatus();
   };
   const closeModal = () => {
     if (stage === "shake" || stage === "burst") return;
@@ -112,23 +148,41 @@ export default function MysteryBox({
     setReward(null);
   };
 
-  const onBoxClick = () => {
-    if (!canClaim || stage !== "idle") return;
-    const rarity = rollRarity();
-    const def = RARITY[rarity];
-    const points = Math.floor(def.min + Math.random() * (def.max - def.min + 1));
-    setReward({ rarity, points });
+  const onBoxClick = async () => {
+    if (!canClaim || stage !== "idle" || !walletAddress) return;
     setStage("shake");
+    let rarity: Rarity = "common";
+    let points = 0;
+    try {
+      const r = await fetch(`${API_BASE}/mystery-box/claim`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wallet: walletAddress.toLowerCase() }),
+      });
+      const j = await r.json().catch(() => ({} as any));
+      if (!r.ok) throw new Error(j?.error || "claim_failed");
+      const raw = String(j?.rarity || "common").toLowerCase() as Rarity;
+      rarity = (["common","rare","epic","legendary"].includes(raw) ? raw : "common") as Rarity;
+      const num = (v: any) => {
+        const n = typeof v === "string" ? Number(v) : v;
+        return Number.isFinite(n) ? Number(n) : 0;
+      };
+      points = num(j?.points ?? j?.pts ?? j?.reward);
+      if (!points) {
+        const def = RARITY[rarity];
+        points = Math.floor(def.min + Math.random() * (def.max - def.min + 1));
+      }
+    } catch {
+      // fallback local roll so UX never breaks if the endpoint is down
+      rarity = rollRarity();
+      const def = RARITY[rarity];
+      points = Math.floor(def.min + Math.random() * (def.max - def.min + 1));
+    }
+    setReward({ rarity, points });
     window.setTimeout(() => setStage("burst"), 1500);
     window.setTimeout(() => {
       setStage("reveal");
-      if (walletAddress) {
-        setState((prev) => {
-          const next = { ...prev, betsProgress: 0, todayBoxes: prev.todayBoxes + 1 };
-          saveState(walletAddress, next);
-          return next;
-        });
-      }
+      fetchStatus();
     }, 2000);
   };
 
