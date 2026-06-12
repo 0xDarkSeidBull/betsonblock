@@ -52,22 +52,20 @@ export default function MysteryBox({
   const [open, setOpen] = React.useState(false);
   const [stage, setStage] = React.useState<"idle" | "shake" | "burst" | "reveal">("idle");
   const [reward, setReward] = React.useState<{ rarity: Rarity; points: number } | null>(null);
-  const [rotY, setRotY] = React.useState(-20);
-  const [rotX, setRotX] = React.useState(-15);
-  const dragRef = React.useRef<{ x: number; y: number; rx: number; ry: number; moved: boolean } | null>(null);
+  const [rotZ, setRotZ] = React.useState(0);
+  const dragRef = React.useRef<{ x: number; y: number; rz: number; moved: boolean } | null>(null);
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (stage !== "idle") return;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    dragRef.current = { x: e.clientX, y: e.clientY, rx: rotX, ry: rotY, moved: false };
+    dragRef.current = { x: e.clientX, y: e.clientY, rz: rotZ, moved: false };
   };
   const onPointerMove = (e: React.PointerEvent) => {
     if (!dragRef.current) return;
     const dx = e.clientX - dragRef.current.x;
     const dy = e.clientY - dragRef.current.y;
     if (Math.abs(dx) + Math.abs(dy) > 4) dragRef.current.moved = true;
-    setRotY(dragRef.current.ry + dx * 0.6);
-    setRotX(Math.max(-80, Math.min(80, dragRef.current.rx - dy * 0.6)));
+    setRotZ(dragRef.current.rz + dx * 0.8);
   };
   const onPointerUp = (e: React.PointerEvent) => {
     const moved = dragRef.current?.moved;
@@ -246,15 +244,15 @@ export default function MysteryBox({
             {/* TOP: claims left today */}
             <div style={{
               display: "inline-flex", alignItems: "center", gap: 8,
-              background: "#fff7ed", border: "2px solid #000", borderRadius: 999,
+              background: "#3b82f6", border: "2px solid #000", borderRadius: 8,
               padding: "6px 14px", fontWeight: 900, fontSize: 13,
-              fontFamily: "ui-monospace,monospace", color: "#0a0a0a",
-              boxShadow: "3px 3px 0 0 rgba(0,0,0,.9)",
+              fontFamily: "ui-monospace,monospace", color: "#fff",
+              boxShadow: "2px 2px 0 0 #000",
             }}>
-              <span style={{ color: "#cc0000" }}>{state.todayBoxes}</span>
-              <span style={{ opacity: .5 }}>/</span>
+              <span>{state.todayBoxes}</span>
+              <span style={{ opacity: .6 }}>/</span>
               <span>{MAX_BOXES}</span>
-              <span style={{ fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "#475569", marginLeft: 4 }}>claims today</span>
+              <span style={{ fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", marginLeft: 4 }}>claims today</span>
             </div>
 
             {/* BOX */}
@@ -284,9 +282,9 @@ export default function MysteryBox({
                   }
                   style={{
                     width: "100%", height: "100%", objectFit: "contain",
-                    transform: `rotateX(${rotX}deg) rotateY(${rotY}deg)`,
-                    transformStyle: "preserve-3d",
-                    transition: dragRef.current ? "none" : "transform .15s ease-out, filter .2s ease",
+                    transform: `rotate(${rotZ}deg)`,
+                    transformOrigin: "50% 50%",
+                    transition: dragRef.current ? "none" : "transform .25s cubic-bezier(.22,.61,.36,1), filter .2s ease",
                     animation: stage === "shake" ? "mbx-shake .25s ease-in-out infinite"
                       : stage === "burst" ? "mbx-burst .5s ease-out forwards"
                       : undefined,
@@ -294,6 +292,7 @@ export default function MysteryBox({
                       ? "drop-shadow(0 0 16px rgba(255,215,0,.65))"
                       : "drop-shadow(0 6px 12px rgba(0,0,0,.35))",
                     pointerEvents: "none",
+                    willChange: "transform",
                   }}
                 />
               )}
@@ -340,16 +339,15 @@ export default function MysteryBox({
               <>
                 <div style={{
                   display: "inline-flex", alignItems: "center", gap: 8,
-                  background: maxed ? "#fee2e2" : canClaim ? "#dcfce7" : "#f1f5f9",
-                  border: "2px solid #000", borderRadius: 999,
+                  background: "#3b82f6", border: "2px solid #000", borderRadius: 8,
                   padding: "6px 14px", fontWeight: 900, fontSize: 13,
-                  fontFamily: "ui-monospace,monospace", color: "#0a0a0a",
-                  boxShadow: "3px 3px 0 0 rgba(0,0,0,.9)",
+                  fontFamily: "ui-monospace,monospace", color: "#fff",
+                  boxShadow: "2px 2px 0 0 #000",
                 }}>
-                  <span style={{ color: canClaim ? "#16a34a" : "#0a0a0a" }}>{state.betsProgress}</span>
-                  <span style={{ opacity: .5 }}>/</span>
+                  <span>{state.betsProgress}</span>
+                  <span style={{ opacity: .6 }}>/</span>
                   <span>{BETS_NEEDED}</span>
-                  <span style={{ fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "#475569", marginLeft: 4 }}>bets</span>
+                  <span style={{ fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", marginLeft: 4 }}>bets</span>
                 </div>
 
                 <div style={{ width: "100%", height: 8, background: "#f1f5f9", borderRadius: 999, overflow: "hidden", border: "2px solid #000" }}>
