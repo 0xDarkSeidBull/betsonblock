@@ -1,5 +1,8 @@
 import React from "react";
 import Coin from "./Coin";
+import MysteryBox from "./MysteryBox";
+
+
 
 const TILES = 30;
 
@@ -24,6 +27,7 @@ export default function BetPanel({
   placing,
   myBets,
   walletConnected,
+  walletAddress,
   onConnect,
   autoActive,
   autoRoundsLeft,
@@ -41,12 +45,14 @@ export default function BetPanel({
   placing: boolean;
   myBets: Array<{ tile: number; amount: number }>;
   walletConnected: boolean;
+  walletAddress?: string | null;
   onConnect: () => void;
   autoActive: boolean;
   autoRoundsLeft: number;
   onStartAuto: (cfg: AutoConfig) => void;
   onStopAuto: () => void;
 }) {
+  const [betsPlacedCount, setBetsPlacedCount] = React.useState(0);
   const [mode, setMode] = React.useState<Mode>("manual");
   const [amount, setAmount] = React.useState("0.01");
   const [rounds, setRounds] = React.useState("1");
