@@ -4,9 +4,9 @@ import boxAsset from "@/assets/mystery-box.png.asset.json";
 type Rarity = "common" | "rare" | "epic" | "legendary";
 
 const RARITY = {
-  common:    { color: "#CD853F", label: "COMMON",    min: 5,   max: 20 },
-  rare:      { color: "#4fc3f7", label: "RARE",      min: 25,  max: 60 },
-  epic:      { color: "#ce93d8", label: "EPIC",      min: 75,  max: 150 },
+  common:    { color: "#CD853F", label: "COMMON",     min: 5,   max: 20 },
+  rare:      { color: "#4fc3f7", label: "RARE",       min: 25,  max: 60 },
+  epic:      { color: "#ce93d8", label: "EPIC",       min: 75,  max: 150 },
   legendary: { color: "#FFD700", label: "LEGENDARY!", min: 200, max: 500 },
 } as const;
 
@@ -45,23 +45,23 @@ export default function MysteryBox({
   totalBetsPlaced,
 }: {
   walletAddress: string | null;
-  totalBetsPlaced: number; // monotonically increasing count of bets the user has placed in this session
+  totalBetsPlaced: number;
 }) {
   const [state, setState] = React.useState<State>({ betsProgress: 0, todayBoxes: 0, lastBetCount: 0 });
-  const [opening, setOpening] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [stage, setStage] = React.useState<"idle" | "shake" | "burst" | "reveal">("idle");
   const [reward, setReward] = React.useState<{ rarity: Rarity; points: number } | null>(null);
-  const [stage, setStage] = React.useState<"shake" | "burst" | "reveal">("shake");
 
-  // Load when wallet changes
   React.useEffect(() => {
-    if (!walletAddress) return;
+    if (!walletAddress) {
+      setState({ betsProgress: 0, todayBoxes: 0, lastBetCount: 0 });
+      return;
+    }
     const s = loadState(walletAddress);
-    // sync session bet count baseline
     setState({ ...s, lastBetCount: totalBetsPlaced });
      
   }, [walletAddress]);
 
-  // Increment progress when totalBetsPlaced grows
   React.useEffect(() => {
     if (!walletAddress) return;
     setState((prev) => {
@@ -74,41 +74,39 @@ export default function MysteryBox({
     });
   }, [totalBetsPlaced, walletAddress]);
 
-  const canClaim = state.betsProgress >= BETS_NEEDED && state.todayBoxes < MAX_BOXES;
+  const canClaim = !!walletAddress && state.betsProgress >= BETS_NEEDED && state.todayBoxes < MAX_BOXES;
   const maxed = state.todayBoxes >= MAX_BOXES;
 
-  const onClaim = () => {
-    if (!walletAddress || !canClaim || opening) return;
+  const openModal = () => {
+    setStage("idle");
+    setReward(null);
+    setOpen(true);
+  };
+  const closeModal = () => {
+    if (stage === "shake" || stage === "burst") return;
+    setOpen(false);
+    setStage("idle");
+    setReward(null);
+  };
+
+  const onBoxClick = () => {
+    if (!canClaim || stage !== "idle") return;
     const rarity = rollRarity();
     const def = RARITY[rarity];
     const points = Math.floor(def.min + Math.random() * (def.max - def.min + 1));
     setReward({ rarity, points });
     setStage("shake");
-    setOpening(true);
-    // shake -> burst -> reveal
     window.setTimeout(() => setStage("burst"), 1500);
-    window.setTimeout(() => setStage("reveal"), 2000);
-    // auto-dismiss
     window.setTimeout(() => {
-      setOpening(false);
-      setReward(null);
-      setState((prev) => {
-        const next = { ...prev, betsProgress: 0, todayBoxes: prev.todayBoxes + 1 };
-        saveState(walletAddress, next);
-        return next;
-      });
-    }, 6000);
-  };
-
-  const dismiss = () => {
-    if (!opening || !walletAddress) return;
-    setOpening(false);
-    setReward(null);
-    setState((prev) => {
-      const next = { ...prev, betsProgress: 0, todayBoxes: prev.todayBoxes + 1 };
-      saveState(walletAddress, next);
-      return next;
-    });
+      setStage("reveal");
+      if (walletAddress) {
+        setState((prev) => {
+          const next = { ...prev, betsProgress: 0, todayBoxes: prev.todayBoxes + 1 };
+          saveState(walletAddress, next);
+          return next;
+        });
+      }
+    }, 2000);
   };
 
   const pct = Math.min(100, (state.betsProgress / BETS_NEEDED) * 100);
@@ -118,23 +116,23 @@ export default function MysteryBox({
       <style>{`
         @keyframes mbx-wiggle {
           0%, 100% { transform: rotate(-4deg) translateY(0); }
-          50% { transform: rotate(4deg) translateY(-2px); }
+          50% { transform: rotate(4deg) translateY(-3px); }
         }
         @keyframes mbx-pulse-btn {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(255,215,0,.6), 0 0 12px rgba(204,0,0,.6); }
-          50% { box-shadow: 0 0 0 8px rgba(255,215,0,0), 0 0 22px rgba(255,215,0,.8); }
+          0%, 100% { box-shadow: 5px 5px 0 0 rgba(0,0,0,.9), 0 0 0 0 rgba(204,0,0,.6); }
+          50% { box-shadow: 5px 5px 0 0 rgba(0,0,0,.9), 0 0 0 8px rgba(204,0,0,0); }
         }
         @keyframes mbx-shake {
           0%,100% { transform: translate(0,0) rotate(0); }
-          20% { transform: translate(-8px,2px) rotate(-6deg); }
-          40% { transform: translate(8px,-2px) rotate(6deg); }
-          60% { transform: translate(-6px,3px) rotate(-4deg); }
-          80% { transform: translate(6px,-1px) rotate(4deg); }
+          20% { transform: translate(-10px,3px) rotate(-8deg); }
+          40% { transform: translate(10px,-3px) rotate(8deg); }
+          60% { transform: translate(-8px,4px) rotate(-6deg); }
+          80% { transform: translate(8px,-2px) rotate(6deg); }
         }
         @keyframes mbx-burst {
           0% { transform: scale(1); opacity: 1; }
           60% { transform: scale(1.6); opacity: 1; }
-          100% { transform: scale(2.2); opacity: 0; }
+          100% { transform: scale(2.4); opacity: 0; }
         }
         @keyframes mbx-reveal {
           0% { transform: scale(.4); opacity: 0; }
@@ -143,145 +141,215 @@ export default function MysteryBox({
         }
         @keyframes mbx-confetti {
           0% { transform: translateY(-20px) rotate(0); opacity: 1; }
-          100% { transform: translateY(280px) rotate(720deg); opacity: 0; }
+          100% { transform: translateY(320px) rotate(720deg); opacity: 0; }
         }
-        .mbx-wiggle { animation: mbx-wiggle 1.4s ease-in-out infinite; transform-origin: 50% 70%; }
+        @keyframes mbx-float {
+          0%, 100% { transform: translateY(0) rotate(-3deg); }
+          50% { transform: translateY(-8px) rotate(3deg); }
+        }
+        .mbx-float-idle { animation: mbx-float 3s ease-in-out infinite; transform-origin: 50% 70%; }
+        .mbx-wiggle-ready { animation: mbx-wiggle 0.6s ease-in-out infinite; transform-origin: 50% 70%; }
       `}</style>
 
-      <div style={{
-        background: "rgba(20,0,0,0.8)",
-        border: "1px solid #cc0000",
-        borderRadius: 8,
-        padding: 12,
-        width: "100%",
-        color: "#fff",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 8,
-        position: "relative",
-      }}>
-        <div style={{
-          position: "absolute", top: 8, right: 10,
-          fontSize: 10, fontWeight: 800, letterSpacing: ".08em",
-          background: "rgba(204,0,0,.25)", color: "#ff6b6b",
-          border: "1px solid #cc0000", borderRadius: 999,
-          padding: "2px 8px",
-        }}>Today: {state.todayBoxes}/{MAX_BOXES} box</div>
-
-        <div style={{ width: 90, height: 90, marginTop: 14 }} className={canClaim && !opening ? "mbx-wiggle" : undefined}>
-          <img src={boxAsset.url} alt="Mystery Box" style={{ width: "100%", height: "100%", objectFit: "contain", filter: canClaim ? "drop-shadow(0 0 10px rgba(255,215,0,.6))" : "drop-shadow(0 4px 8px rgba(0,0,0,.6))" }} />
-        </div>
-
-        {!maxed && (
-          <div style={{ width: "100%", height: 6, background: "rgba(255,255,255,.08)", borderRadius: 999, overflow: "hidden" }}>
-            <div style={{
-              width: `${pct}%`, height: "100%",
-              background: canClaim
-                ? "linear-gradient(90deg,#cc0000,#FFD700)"
-                : "rgba(255,255,255,.25)",
-              transition: "width 240ms ease",
-            }} />
-          </div>
+      {/* TOPBAR TRIGGER BUTTON — same family as About / My Bets */}
+      <button
+        onClick={openModal}
+        title="Mystery Box"
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 8,
+          background: "#fff", color: "#0a0a0a", border: "3px solid #000",
+          borderRadius: 12, padding: "10px 14px", fontWeight: 900,
+          fontFamily: "'Space Grotesk',system-ui,sans-serif",
+          letterSpacing: ".04em", textTransform: "uppercase",
+          boxShadow: "5px 5px 0 0 rgba(0,0,0,.9)", cursor: "pointer",
+          fontSize: 12, lineHeight: 1, position: "relative",
+          animation: canClaim ? "mbx-pulse-btn 1.6s ease-in-out infinite" : undefined,
+        }}
+        onMouseDown={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "translate(3px,3px)"; (e.currentTarget as HTMLButtonElement).style.boxShadow = "2px 2px 0 0 rgba(0,0,0,.9)"; }}
+        onMouseUp={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = ""; (e.currentTarget as HTMLButtonElement).style.boxShadow = "5px 5px 0 0 rgba(0,0,0,.9)"; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = ""; (e.currentTarget as HTMLButtonElement).style.boxShadow = "5px 5px 0 0 rgba(0,0,0,.9)"; }}
+      >
+        <span style={{ fontSize: 14 }}>🎁</span> Mystery Box
+        {canClaim && (
+          <span style={{
+            background: "#cc0000", color: "#fff", borderRadius: 999,
+            padding: "2px 7px", fontSize: 10, border: "2px solid #000",
+            marginLeft: 2,
+          }}>READY</span>
         )}
+      </button>
 
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", gap: 8 }}>
-          {maxed ? (
-            <div style={{ flex: 1, textAlign: "center", fontSize: 12, fontWeight: 700, color: "#ff9999", padding: "8px 0" }}>
-              Come back tomorrow
-            </div>
-          ) : (
-            <>
-              <button
-                onClick={onClaim}
-                disabled={!canClaim}
-                style={{
-                  flex: 1,
-                  background: canClaim
-                    ? "linear-gradient(90deg,#cc0000,#FFD700)"
-                    : "rgba(255,255,255,.08)",
-                  color: canClaim ? "#0f172a" : "#888",
-                  border: "1px solid " + (canClaim ? "#FFD700" : "#444"),
-                  borderRadius: 6,
-                  padding: "8px 12px",
-                  fontWeight: 900,
-                  fontSize: 12,
-                  letterSpacing: ".14em",
-                  textTransform: "uppercase",
-                  cursor: canClaim ? "pointer" : "not-allowed",
-                  animation: canClaim ? "mbx-pulse-btn 1.6s ease-in-out infinite" : undefined,
-                }}
-              >
-                {canClaim ? "Claim 🎁" : "Claim"}
-              </button>
-              <div style={{ fontSize: 11, color: "#cbd5e1", fontFamily: "ui-monospace,monospace", fontWeight: 700, whiteSpace: "nowrap" }}>
-                {state.betsProgress}/{BETS_NEEDED} bets
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {opening && reward && (
+      {open && (
         <div
-          onClick={dismiss}
+          onClick={closeModal}
           style={{
             position: "fixed", inset: 0, zIndex: 9999,
             background: "rgba(0,0,0,.75)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            cursor: "pointer",
+            padding: 20,
           }}
         >
-          <div style={{ position: "relative", width: 280, height: 280, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff", border: "3px solid #000",
+              borderRadius: 18, padding: "28px 24px 24px",
+              boxShadow: "8px 8px 0 0 rgba(0,0,0,.9)",
+              width: "100%", maxWidth: 360,
+              position: "relative",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 14,
+              fontFamily: "'Space Grotesk',system-ui,sans-serif",
+            }}
+          >
+            <button
+              onClick={closeModal}
+              aria-label="Close"
+              style={{
+                position: "absolute", top: 10, right: 10,
+                width: 28, height: 28, borderRadius: 8,
+                background: "#fff", border: "2px solid #000",
+                fontWeight: 900, cursor: "pointer", lineHeight: 1,
+                boxShadow: "2px 2px 0 0 rgba(0,0,0,.9)",
+              }}
+            >×</button>
+
+            <div style={{
+              fontWeight: 900, fontSize: 12, letterSpacing: ".18em",
+              textTransform: "uppercase", color: "#0a0a0a",
+            }}>Mystery Box</div>
+
+            {/* TOP: claims left today */}
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              background: "#fff7ed", border: "2px solid #000", borderRadius: 999,
+              padding: "6px 14px", fontWeight: 900, fontSize: 13,
+              fontFamily: "ui-monospace,monospace", color: "#0a0a0a",
+              boxShadow: "3px 3px 0 0 rgba(0,0,0,.9)",
+            }}>
+              <span style={{ color: "#cc0000" }}>{state.todayBoxes}</span>
+              <span style={{ opacity: .5 }}>/</span>
+              <span>{MAX_BOXES}</span>
+              <span style={{ fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "#475569", marginLeft: 4 }}>claims today</span>
+            </div>
+
+            {/* BOX */}
+            <div
+              onClick={onBoxClick}
+              style={{
+                width: 180, height: 180, position: "relative",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: canClaim && stage === "idle" ? "pointer" : "default",
+              }}
+            >
+              {stage !== "reveal" && (
+                <img
+                  src={boxAsset.url}
+                  alt="Mystery Box"
+                  className={
+                    stage === "shake" ? undefined
+                    : canClaim ? "mbx-wiggle-ready"
+                    : "mbx-float-idle"
+                  }
+                  style={{
+                    width: "100%", height: "100%", objectFit: "contain",
+                    animation: stage === "shake" ? "mbx-shake .25s ease-in-out infinite"
+                      : stage === "burst" ? "mbx-burst .5s ease-out forwards"
+                      : undefined,
+                    filter: canClaim
+                      ? "drop-shadow(0 0 16px rgba(255,215,0,.65))"
+                      : "drop-shadow(0 6px 12px rgba(0,0,0,.35))",
+                    transition: "filter .2s ease",
+                  }}
+                />
+              )}
+              {stage === "reveal" && reward && (
+                <>
+                  <div style={{
+                    animation: "mbx-reveal .5s ease-out forwards",
+                    background: "#0a0a0a",
+                    border: `3px solid ${RARITY[reward.rarity].color}`,
+                    borderRadius: 14,
+                    padding: "22px 28px",
+                    textAlign: "center",
+                    boxShadow: `0 0 40px ${RARITY[reward.rarity].color}80`,
+                  }}>
+                    <div style={{
+                      fontSize: 36, fontWeight: 900, color: "#fff",
+                      fontFamily: "ui-monospace,monospace",
+                      textShadow: `0 0 12px ${RARITY[reward.rarity].color}`,
+                    }}>+{reward.points} pts</div>
+                    <div style={{
+                      marginTop: 4, fontSize: 14, fontWeight: 900, letterSpacing: ".22em",
+                      color: RARITY[reward.rarity].color,
+                    }}>{RARITY[reward.rarity].label}</div>
+                  </div>
+                  {reward.rarity === "legendary" && Array.from({ length: 30 }).map((_, i) => {
+                    const colors = ["#FFD700", "#ff6b6b", "#4fc3f7", "#ce93d8", "#0a0a0a"];
+                    const left = Math.random() * 220 - 20;
+                    const delay = Math.random() * 0.5;
+                    return (
+                      <span key={i} style={{
+                        position: "absolute", top: -10, left,
+                        width: 8, height: 12, background: colors[i % colors.length],
+                        animation: `mbx-confetti 2s ${delay}s ease-in forwards`,
+                        borderRadius: 2, pointerEvents: "none",
+                      }} />
+                    );
+                  })}
+                </>
+              )}
+            </div>
+
+            {/* BOTTOM: bets progress */}
             {stage !== "reveal" && (
-              <img
-                src={boxAsset.url}
-                alt="Opening"
-                style={{
-                  width: 220, height: 220, objectFit: "contain",
-                  animation: stage === "shake" ? "mbx-shake .25s ease-in-out infinite" : "mbx-burst .5s ease-out forwards",
-                  filter: "drop-shadow(0 0 24px rgba(255,215,0,.6))",
-                }}
-              />
+              <>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  background: maxed ? "#fee2e2" : canClaim ? "#dcfce7" : "#f1f5f9",
+                  border: "2px solid #000", borderRadius: 999,
+                  padding: "6px 14px", fontWeight: 900, fontSize: 13,
+                  fontFamily: "ui-monospace,monospace", color: "#0a0a0a",
+                  boxShadow: "3px 3px 0 0 rgba(0,0,0,.9)",
+                }}>
+                  <span style={{ color: canClaim ? "#16a34a" : "#0a0a0a" }}>{state.betsProgress}</span>
+                  <span style={{ opacity: .5 }}>/</span>
+                  <span>{BETS_NEEDED}</span>
+                  <span style={{ fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "#475569", marginLeft: 4 }}>bets</span>
+                </div>
+
+                <div style={{ width: "100%", height: 8, background: "#f1f5f9", borderRadius: 999, overflow: "hidden", border: "2px solid #000" }}>
+                  <div style={{
+                    width: `${pct}%`, height: "100%",
+                    background: canClaim ? "linear-gradient(90deg,#cc0000,#FFD700)" : "#94a3b8",
+                    transition: "width 240ms ease",
+                  }} />
+                </div>
+
+                <div style={{
+                  fontSize: 11, color: "#475569", fontWeight: 700,
+                  textAlign: "center", letterSpacing: ".04em", marginTop: 2,
+                }}>
+                  {!walletAddress
+                    ? "Connect wallet to start collecting"
+                    : maxed
+                    ? "All 3 boxes claimed — come back tomorrow"
+                    : canClaim
+                    ? "Tap the box to open!"
+                    : `Place ${BETS_NEEDED - state.betsProgress} more bet${BETS_NEEDED - state.betsProgress === 1 ? "" : "s"} to unlock`}
+                </div>
+              </>
             )}
             {stage === "reveal" && (
-              <div style={{
-                animation: "mbx-reveal .5s ease-out forwards",
-                background: "rgba(20,0,0,.9)",
-                border: `3px solid ${RARITY[reward.rarity].color}`,
-                borderRadius: 14,
-                padding: "28px 36px",
-                textAlign: "center",
-                boxShadow: `0 0 40px ${RARITY[reward.rarity].color}80`,
-              }}>
-                <div style={{
-                  fontSize: 42, fontWeight: 900, color: "#fff",
-                  fontFamily: "ui-monospace,monospace",
-                  textShadow: `0 0 12px ${RARITY[reward.rarity].color}`,
-                }}>+{reward.points} pts</div>
-                <div style={{
-                  marginTop: 6, fontSize: 16, fontWeight: 900, letterSpacing: ".2em",
-                  color: RARITY[reward.rarity].color,
-                }}>{RARITY[reward.rarity].label}</div>
-              </div>
-            )}
-            {stage === "reveal" && reward.rarity === "legendary" && (
-              <>
-                {Array.from({ length: 30 }).map((_, i) => {
-                  const colors = ["#FFD700", "#ff6b6b", "#4fc3f7", "#ce93d8", "#fff"];
-                  const left = Math.random() * 280;
-                  const delay = Math.random() * 0.5;
-                  const bg = colors[i % colors.length];
-                  return (
-                    <span key={i} style={{
-                      position: "absolute", top: 0, left,
-                      width: 8, height: 12, background: bg,
-                      animation: `mbx-confetti 1.8s ${delay}s ease-in forwards`,
-                      borderRadius: 2,
-                    }} />
-                  );
-                })}
-              </>
+              <button
+                onClick={closeModal}
+                style={{
+                  marginTop: 4, background: "#0a0a0a", color: "#fff",
+                  border: "3px solid #000", borderRadius: 10,
+                  padding: "10px 22px", fontWeight: 900, fontSize: 12,
+                  letterSpacing: ".14em", textTransform: "uppercase", cursor: "pointer",
+                  boxShadow: "4px 4px 0 0 rgba(0,0,0,.9)",
+                }}
+              >Awesome</button>
             )}
           </div>
         </div>

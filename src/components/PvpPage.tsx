@@ -6,6 +6,7 @@ import { BrowserProvider, Contract, parseEther } from "ethers";
 import PvpWheelVisual from "./PvpWheelVisual";
 import MyBetsModal from "./MyBetsModal";
 import AboutModal from "./AboutModal";
+import MysteryBox from "./MysteryBox";
 import BetPanel, { AutoConfig } from "./BetPanel";
 import { sounds } from "../lib/pvpSounds";
 
@@ -144,6 +145,7 @@ export default function PvpPage({ onBack, onAbout }: { onBack: () => void; onAbo
   const [lastTxHash, setLastTxHash] = React.useState<string | null>(null);
   const [animationWinner, setAnimationWinner] = React.useState<EndedRound | null>(null);
   const [myBetsRefresh, setMyBetsRefresh] = React.useState(0);
+  const [mysteryBetCount, setMysteryBetCount] = React.useState(0);
 
   const prevRoundRef = React.useRef<number | null>(null);
   const prevStatusRef = React.useRef<string | null>(null);
@@ -497,6 +499,7 @@ export default function PvpPage({ onBack, onAbout }: { onBack: () => void; onAbo
     }
     setPlacing(false);
     if (okCount > 0) {
+      setMysteryBetCount((c) => c + okCount);
       const shortTx = lastTxHash ? `${lastTxHash.slice(0, 8)}…${lastTxHash.slice(-6)}` : "";
       setToast(
         lastTxHash
@@ -604,6 +607,7 @@ export default function PvpPage({ onBack, onAbout }: { onBack: () => void; onAbo
         </div>
         <div className="pvp-topbar-right" style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 10 }}>
           <AboutModal onOpen={onAbout} />
+          <MysteryBox walletAddress={addr} totalBetsPlaced={mysteryBetCount} />
           <MyBetsModal address={addr} refreshKey={myBetsRefresh} />
           <span className="live-head" style={{ display: "inline-flex", alignItems: "center" }}><span className="pulse" /> PVP <b className="mono" style={{ marginLeft: 4 }}>#{status?.round_id ?? "…"}</b></span>
         </div>
