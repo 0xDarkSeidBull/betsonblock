@@ -354,7 +354,7 @@ export default function MysteryBox({
             )}
           </div>
         </div>
-      )}
+      ), document.body)}
     </>
   );
 }
