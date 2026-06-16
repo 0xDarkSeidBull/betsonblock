@@ -519,7 +519,13 @@ export default function RoundCard({
               <span style={{ fontSize: 11, opacity: .8 }}>zkLTC</span>
             </span>
           </div>
-          {mode.multiplier > 0 && <div className="pm-bv-win"><span>If you win</span><b className="em"><Coin size={14} /> {(BET * mode.multiplier).toFixed(4)} zkLTC</b></div>}
+          {mode.kind === "binary" ? (
+            <div className="pm-bv-win"><span>If matched</span><b className="em"><Coin size={14} /> 0.0196 zkLTC</b></div>
+          ) : (mode.kind === "digit" || mode.kind === "number" || mode.kind === "perfectblock" || mode.kind === "pvp") && (
+            modePool > 0
+              ? <div className="pm-bv-win"><span>If you win</span><b className="em"><Coin size={14} /> ~{(modePool * 0.99).toFixed(4)} zkLTC</b></div>
+              : <div className="pm-bv-win"><span>Winner takes</span><b className="em">all bets</b></div>
+          )}
           <button className="pm-confirm" disabled={!canConfirm} onClick={confirm}>
             <LeverSwitch pulled={confirmPulled} side={finalPick} size={26} />
             <span className="pm-confirm-txt">{placing ? "Confirm in wallet…" : "Confirm Bet"}</span>
