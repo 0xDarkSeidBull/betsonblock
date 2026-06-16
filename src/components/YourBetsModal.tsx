@@ -82,9 +82,10 @@ const card = (highlight?: boolean): React.CSSProperties => ({
 const blockTitle: React.CSSProperties = {
   fontFamily: "'JetBrains Mono',monospace", fontWeight: 800, fontSize: 22, letterSpacing: "-.01em",
 };
-const priceBadge = (win: boolean): React.CSSProperties => ({
+const priceBadge = (kind: "win" | "loss" | "refund" | "live"): React.CSSProperties => ({
   position: "absolute", top: -18, right: -10, width: 78, height: 78, borderRadius: "50%",
-  background: win ? "#22c55e" : "#ef4444", color: "#fff", border: "3px solid #000",
+  background: kind === "win" || kind === "live" ? "#22c55e" : kind === "refund" ? "#f59e0b" : "#ef4444",
+  color: "#fff", border: "3px solid #000",
   boxShadow: "3px 3px 0 0 rgba(0,0,0,.9)",
   display: "grid", placeItems: "center", textAlign: "center", lineHeight: 1, fontWeight: 900,
   fontFamily: "'JetBrains Mono',monospace",
