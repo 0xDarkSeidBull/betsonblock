@@ -92,6 +92,11 @@ export default function RoundCard({
   const votedB = 100 - votedA;
   const totalPot = round.totalStaked;
 
+  // mode-specific pool & your share (for non-binary modes)
+  const modePool = pools.filter((p) => p.mode === mode.id).reduce((s, p) => s + p.stake, 0);
+  const myStakeInMode = myBets.filter((b) => b.mode === mode.id).length * BET;
+  const yourSharePct = modePool > 0 ? (myStakeInMode / modePool) * 100 : 0;
+
   const openBet = (side: string) => {
     if (!addr) { onNeedConnect(); return; }
     if (!isOpen) return;
@@ -248,11 +253,46 @@ export default function RoundCard({
           )}
 
           {/* banks */}
-          <div className="pm-banks">
-            <div><p>Total Pot</p><b style={{color:"#000"}}><Coin size={14} /> {totalPot.toFixed(2)}</b></div>
-            <div><p>Bank {sideA.toUpperCase()}</p><b className="em"><Coin size={14} /> {bankA.toFixed(2)}</b></div>
-            <div><p>Bank {sideB.toUpperCase()}</p><b className="ro"><Coin size={14} /> {bankB.toFixed(2)}</b></div>
-          </div>
+          {mode.kind === "binary" ? (
+            <>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+                <span style={{
+                  fontSize: 10, fontWeight: 800, letterSpacing: ".14em",
+                  textTransform: "uppercase",
+                  background: "rgba(124,92,255,.14)", color: "#7c5cff",
+                  border: "1px solid rgba(124,92,255,.45)",
+                  padding: "3px 8px", borderRadius: 999,
+                }}>P2P · 0.01 zkLTC flat</span>
+              </div>
+              <div className="pm-banks">
+                <div>
+                  <p>Pool {sideA.toUpperCase()}</p>
+                  <b className="em"><Coin size={14} /> {bankA.toFixed(2)}</b>
+                  <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 4, fontWeight: 700 }}>
+                    {playersA} opponent{playersA === 1 ? "" : "s"} waiting
+                  </div>
+                </div>
+                <div>
+                  <p>Pool {sideB.toUpperCase()}</p>
+                  <b className="ro"><Coin size={14} /> {bankB.toFixed(2)}</b>
+                  <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 4, fontWeight: 700 }}>
+                    {playersB} opponent{playersB === 1 ? "" : "s"} waiting
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="pm-banks">
+              <div>
+                <p>Total Pool</p>
+                <b style={{ color: "#000" }}><Coin size={14} /> {modePool.toFixed(2)} zkLTC</b>
+              </div>
+              <div>
+                <p>Your Share</p>
+                <b className="em">{yourSharePct.toFixed(1)}%</b>
+              </div>
+            </div>
+          )}
 
           {/* mode selector */}
           <div className="pm-modes">
@@ -410,7 +450,28 @@ export default function RoundCard({
           <div className={`pm-bv-pill ${["even","high","over"].includes(finalPick) ? "em" : "ro"}`}>
             {mode.label}: {String(finalPick).toUpperCase() || "—"}
           </div>
-          <div className="pm-bv-stake"><span>Stake (fixed)</span><b><Coin size={14} /> 0.01 zkLTC</b></div>
+          <div className="pm-bv-stake">
+            <span>Stake (locked)</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <Coin size={14} />
+              <input
+                type="text"
+                value="0.01"
+                disabled
+                readOnly
+                style={{
+                  width: 70, textAlign: "right",
+                  background: "rgba(0,0,0,.25)",
+                  border: "1px solid var(--line)",
+                  borderRadius: 6, padding: "4px 8px",
+                  color: "inherit", fontWeight: 800,
+                  fontFamily: "ui-monospace,monospace",
+                  cursor: "not-allowed", opacity: 0.85,
+                }}
+              />
+              <span style={{ fontSize: 11, opacity: .8 }}>zkLTC</span>
+            </span>
+          </div>
           {mode.multiplier > 0 && <div className="pm-bv-win"><span>If you win</span><b className="em"><Coin size={14} /> {(BET * mode.multiplier).toFixed(4)} zkLTC</b></div>}
           <button className="pm-confirm" disabled={!canConfirm} onClick={confirm}>
             <LeverSwitch pulled={confirmPulled} side={finalPick} size={26} />
