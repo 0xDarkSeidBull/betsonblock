@@ -21,7 +21,14 @@ type EndedBet = {
   win: boolean;
   payout: number;
   settledAt: number;
+  refund?: boolean;
 };
+
+function betKind(b: { win: boolean; payout: number; refund?: boolean }): "win" | "refund" | "loss" {
+  if (b.win) return "win";
+  if (b.refund === true || (b.payout > 0 && !b.win)) return "refund";
+  return "loss";
+}
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL || "";
 const PAGE_SIZE = 3;
