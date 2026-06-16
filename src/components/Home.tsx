@@ -62,7 +62,7 @@ export default function Home({ onEnter, onPvp }: { onEnter: () => void; onPvp?: 
             <div className="num">4</div>
             <Blocks size={22} />
             <h3>The block decides</h3>
-            <p>When the block lands, its hash and data resolve every bet instantly. Winners are paid from the house wallet. Check the result on the explorer.</p>
+            <p>When the block lands, its hash resolves every bet instantly. For P2P games, your bet is matched against an opponent — winner takes 99% of the pot. For pool games, winners share the entire pool proportionally. No house, fully verifiable.</p>
           </div>
         </div>
       </section>
