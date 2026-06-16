@@ -441,11 +441,6 @@ export default function RoundCard({
                   onChange={(e) => setNum(e.target.value.replace(/\D/g, ""))}
                 />
               )}
-              {mode.kind === "binary" && (
-                <div style={{ fontSize: 12, color: "var(--text-2)", margin: "-2px 0 12px" }}>
-                  <span>If matched: <b style={{ color: "#00e5ff" }}><Coin size={13} /> 0.0196 zkLTC</b></span>
-                </div>
-              )}
               {(mode.kind === "digit" || mode.kind === "number" || mode.kind === "perfectblock") && (
                 <div style={{ fontSize: 12, color: "var(--text-2)", margin: "-2px 0 12px" }}>
                   {modePool > 0 ? (
