@@ -92,6 +92,11 @@ export default function RoundCard({
   const votedB = 100 - votedA;
   const totalPot = round.totalStaked;
 
+  // mode-specific pool & your share (for non-binary modes)
+  const modePool = pools.filter((p) => p.mode === mode.id).reduce((s, p) => s + p.stake, 0);
+  const myStakeInMode = myBets.filter((b) => b.mode === mode.id).length * BET;
+  const yourSharePct = modePool > 0 ? (myStakeInMode / modePool) * 100 : 0;
+
   const openBet = (side: string) => {
     if (!addr) { onNeedConnect(); return; }
     if (!isOpen) return;
