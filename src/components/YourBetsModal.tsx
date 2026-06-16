@@ -351,7 +351,7 @@ function BetCard({
 }: {
   blockKey: string;
   blockLabel: string;
-  badgeKind: "live" | "win" | "loss";
+  badgeKind: "live" | "win" | "loss" | "refund";
   badgeValue?: React.ReactNode;
   betsByMode: Record<string, any>;
   onModeClick: (mode: string) => void;
@@ -362,9 +362,9 @@ function BetCard({
 }) {
   const badge =
     badgeKind === "live"
-      ? <div style={priceBadge(true)}><div style={{ fontSize: 11 }}>LIVE</div><div style={{ fontSize: 10, opacity: .9 }}>~ est</div></div>
-      : <div style={priceBadge(badgeKind === "win")}>
-          <div style={{ fontSize: 11 }}>{badgeKind === "win" ? "WIN" : "LOSS"}</div>
+      ? <div style={priceBadge("live")}><div style={{ fontSize: 11 }}>LIVE</div><div style={{ fontSize: 10, opacity: .9 }}>~ est</div></div>
+      : <div style={priceBadge(badgeKind)}>
+          <div style={{ fontSize: 11 }}>{badgeKind === "win" ? "WIN" : badgeKind === "refund" ? "REFUND ↩" : "LOSS"}</div>
           <div style={{ fontSize: 11, marginTop: 2 }}>{badgeValue}</div>
         </div>;
   const ptsPill = (label: string, bonus?: boolean): React.CSSProperties => ({
