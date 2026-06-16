@@ -441,19 +441,27 @@ export default function RoundCard({
                   onChange={(e) => setNum(e.target.value.replace(/\D/g, ""))}
                 />
               )}
-              {mode.kind === "perfectblock" && (
+              {mode.kind === "binary" && (
                 <div style={{ fontSize: 12, color: "var(--text-2)", margin: "-2px 0 12px" }}>
-                  <span>If you win: <b style={{ color: "#00e5ff" }}><Coin size={13} /> {(BET * mode.multiplier).toFixed(4)} zkLTC</b> (50×)</span>
+                  <span>If matched: <b style={{ color: "#00e5ff" }}><Coin size={13} /> 0.0196 zkLTC</b></span>
                 </div>
               )}
-              {mode.kind === "number" && (
+              {(mode.kind === "digit" || mode.kind === "number" || mode.kind === "perfectblock") && (
                 <div style={{ fontSize: 12, color: "var(--text-2)", margin: "-2px 0 12px" }}>
-                  <span>If you win: <b style={{ color: "#00e5ff" }}><Coin size={13} /> {(BET * mode.multiplier).toFixed(4)} zkLTC</b> ({mode.multiplier}×)</span>
+                  {modePool > 0 ? (
+                    <span>If you win: <b style={{ color: "#00e5ff" }}><Coin size={13} /> ~{(modePool * 0.99).toFixed(4)} zkLTC</b> (your share)</span>
+                  ) : (
+                    <span style={{ color: "#00e5ff" }}>Be first — winner takes all bets</span>
+                  )}
                 </div>
               )}
               {mode.kind === "pvp" && (
                 <div style={{ fontSize: 12, color: "var(--text-2)", margin: "-2px 0 12px" }}>
-                  <span>If you win: <b style={{ color: "#00e5ff" }}><Coin size={13} /> {Math.max(0.0196, round.players * BET * 0.98).toFixed(4)} zkLTC</b> (winner takes pot)</span>
+                  {modePool > 0 ? (
+                    <span>If you win: <b style={{ color: "#00e5ff" }}><Coin size={13} /> ~{(modePool * 0.99).toFixed(4)} zkLTC</b> (your share)</span>
+                  ) : (
+                    <span style={{ color: "#00e5ff" }}>Be first — winner takes all bets</span>
+                  )}
                 </div>
               )}
               <button
