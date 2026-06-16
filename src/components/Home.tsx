@@ -50,7 +50,7 @@ export default function Home({ onEnter, onPvp }: { onEnter: () => void; onPvp?: 
             <div className="num">2</div>
             <Dice5 size={22} />
             <h3>Choose your bet</h3>
-            <p>Coin flip, hi-lo, lucky digit, number 0-99, transaction over/under, gas, closest pool, or Perfect Block (50×). Stack as many as you like, each is a flat 0.01 zkLTC.</p>
+            <p>Coin flip, hi-lo, lucky digit, number 0-99, transaction over/under, gas, closest pool, or Perfect Block. Each bet is a flat 0.01 zkLTC — matched against real opponents.</p>
           </div>
           <div className="step">
             <div className="num">3</div>
