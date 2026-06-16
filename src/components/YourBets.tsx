@@ -180,12 +180,19 @@ export default function YourBets({
                 }
               }
               return (
-                <div key={i} className={`yb-ended ${b.win ? "win" : "loss"} ${isOpen ? "open" : ""}`}>
+                <div key={i} className={`yb-ended ${betKind(b)} ${isOpen ? "open" : ""}`}>
                   <button className="yb-ended-row" onClick={() => toggle(i, b.block)}>
                     <span className="yb-block mono">#{b.block}</span>
                     <span className="yb-mode-sm">{meta?.label ?? b.mode}</span>
-                    <span className={`yb-result ${b.win ? "win" : "loss"}`}>{b.win ? "WIN" : "LOSS"}</span>
-                    <span className="yb-pay mono"><Coin size={13} /> {(b.win ? b.payout : 0).toFixed(4)}</span>
+                    {(() => {
+                      const k = betKind(b);
+                      const label = k === "win" ? "WIN" : k === "refund" ? "REFUND ↩" : "LOSS";
+                      const amt = k === "win" ? b.payout : k === "refund" ? b.payout : 0;
+                      return <>
+                        <span className={`yb-result ${k}`} style={k === "refund" ? { color: "#f59e0b" } : undefined}>{label}</span>
+                        <span className="yb-pay mono"><Coin size={13} /> {amt.toFixed(4)}</span>
+                      </>;
+                    })()}
                     {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                   </button>
                   {isOpen && (
