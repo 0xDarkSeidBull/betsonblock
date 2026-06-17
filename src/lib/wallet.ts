@@ -15,7 +15,7 @@ export const CHAIN_ID_HEX = "0x1159";
 export const RPC = "https://liteforge.rpc.caldera.xyz/http";
 // House wallet that collects stakes and pays winners. Set this to the funded
 // wallet's PUBLIC address. (Private key lives only on the payout backend.)
-export const HOUSE_ADDRESS = "0x3BC6348E1E569E97Bd8247b093475A4aC22B9fD4";
+export const HOUSE_ADDRESS = "0x554FA14360dEaE7A7ec6b9216Fa9Ca3cA76983a0";
 
 const read = new JsonRpcProvider(RPC, CHAIN_ID, { staticNetwork: true });
 
