@@ -133,7 +133,7 @@ export default function RoundCard({
     setConfirmPulled(true);
     try {
       const txHash = await W.sendStake();
-      const res = await api.bet({ wallet: addr!, roundId: round.id, mode: mode.id, pick: String(finalPick), stake: BET });
+      const res = await api.bet({ wallet: addr!, roundId: round.id, mode: mode.id, pick: String(finalPick), stake: BET, tx_hash: txHash });
       if (res.ok) {
         setMyBets((p) => [...p, { mode: mode.id, pick: String(finalPick) }]);
         onBet({ mode: mode.id, pick: String(finalPick), txHash });

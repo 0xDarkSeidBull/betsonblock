@@ -35,7 +35,7 @@ export const api = {
     j<Paginated<{ bets: any[] }>>(`/api/bets/${wallet}?page=${page}&limit=${limit}`),
   head: () => j<{ block: number }>("/api/head"),
   verify: (block: number) => j<{ block: any; signals: any }>(`/api/verify/${block}`),
-  bet: (body: { wallet: string; roundId: number; mode: string; pick: string; stake: number }) =>
+  bet: (body: { wallet: string; roundId: number; mode: string; pick: string; stake: number; tx_hash?: string }) =>
     j<{ ok: boolean; error?: string; round?: RoundView }>("/api/bet", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
