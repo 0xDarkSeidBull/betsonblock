@@ -267,25 +267,19 @@ export default function RoundCard({
                 <span style={{
                   fontSize: 10, fontWeight: 800, letterSpacing: ".14em",
                   textTransform: "uppercase",
-                  background: "rgba(124,92,255,.14)", color: "#7c5cff",
-                  border: "1px solid rgba(124,92,255,.45)",
+                  background: "rgba(253,224,71,.16)", color: "#fde047",
+                  border: "1px solid rgba(253,224,71,.5)",
                   padding: "3px 8px", borderRadius: 999,
-                }}>⚡ P2P · 0.01 zkLTC flat</span>
+                }}>🏆 Winner takes pool</span>
               </div>
               <div className="pm-banks">
                 <div>
                   <p>Pool {sideA.toUpperCase()}</p>
-                  <b className="em"><Coin size={14} /> {bankA.toFixed(2)}</b>
-                  <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 4, fontWeight: 700 }}>
-                    {playersB} opponent{playersB === 1 ? "" : "s"} waiting
-                  </div>
+                  <b className="em"><Coin size={14} /> {bankA.toFixed(2)} zkLTC</b>
                 </div>
                 <div>
                   <p>Pool {sideB.toUpperCase()}</p>
-                  <b className="ro"><Coin size={14} /> {bankB.toFixed(2)}</b>
-                  <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 4, fontWeight: 700 }}>
-                    {playersA} opponent{playersA === 1 ? "" : "s"} waiting
-                  </div>
+                  <b className="ro"><Coin size={14} /> {bankB.toFixed(2)} zkLTC</b>
                 </div>
               </div>
             </>
